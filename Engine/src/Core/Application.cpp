@@ -1,5 +1,5 @@
-#include "Core/Application.h"
-#include "Core/Window.h"
+#include "AtlasEngine/Core/Application.h"
+#include "AtlasEngine/Core/Window.h"
 
 #include <iostream>
 
