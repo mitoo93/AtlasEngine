@@ -1,0 +1,35 @@
+# Visual Studio
+.vs/
+.vscode/
+
+# CMake
+out/
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# Archivos generados
+*.obj
+*.o
+*.lib
+*.dll
+*.exe
+*.exp
+*.pdb
+*.ilk
+
+# Ninja
+.ninja_deps
+.ninja_log
+
+# Archivos temporales
+*.log
+*.tmp
+*.user
+*.suo
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
