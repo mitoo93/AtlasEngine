@@ -1,12 +1,22 @@
 #pragma once
 
+#include "Core/Window.h"
+
 namespace AtlasEngine
 {
-    class Application
-    {
-    public:
-        Application();
 
-        void Run();
-    };
+class Application
+{
+public:
+
+    Application();
+    ~Application() = default;
+
+    void Run();
+
+private:
+
+    Window m_Window;
+};
+
 }

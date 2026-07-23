@@ -3,16 +3,29 @@
 namespace AtlasEngine
 {
 
-Window::Window()
-{
-}
+	Window::Window()
+	{
 
-Window::~Window()
-{
-}
+	}
 
-void Window::Update()
-{
-}
+	Window::~Window()
+	{
+
+	}
+
+	bool Window::Create(const WindowProperties& properties)
+	{
+		return true;
+	}
+
+	void Window::Update()
+	{
+
+	}
+
+	bool Window::ShouldClose() const
+	{
+		return false;
+	}
 
 }
