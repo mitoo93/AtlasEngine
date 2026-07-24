@@ -4,28 +4,27 @@ namespace AtlasEngine
 {
 
 	Window::Window()
-	{
+    {
+    }
 
-	}
+    Window::~Window()
+    {
+    }
 
-	Window::~Window()
-	{
+    bool Window::Create(const WindowProperties& properties)
+    {
+        m_Data.Properties = properties;
 
-	}
+        return true;
+    }
 
-	bool Window::Create(const WindowProperties& properties)
-	{
-		return true;
-	}
+    void Window::Update()
+    {
+    }
 
-	void Window::Update()
-	{
-
-	}
-
-	bool Window::ShouldClose() const
-	{
-		return false;
-	}
+    bool Window::ShouldClose() const
+    {
+        return false;
+    }
 
 }

@@ -2,31 +2,52 @@
 
 #include <string>
 
+// Forward declaration.
+// Evitamos incluir GLFW en el header.
+struct GLFWwindow;
+
 namespace AtlasEngine
 {
 
-	struct WindowProperties
-	{
-		std::string Title = "Atlas Engine";
-		unsigned int Width = 1280;
-		unsigned int Height = 720;
-	};
+struct WindowProperties
+{
+    std::string Title;
+    unsigned int Width;
+    unsigned int Height;
 
-	class Window
-	{
-	public:
+    WindowProperties(
+        const std::string& title = "Atlas Engine",
+        unsigned int width = 1280,
+        unsigned int height = 720)
+        : Title(title),
+          Width(width),
+          Height(height)
+    {
+    }
+};
 
-		Window();
-		~Window();
+class Window
+{
+public:
 
-		bool Create(const WindowProperties& properties);
+    Window();
+    ~Window();
 
-		void Update();
+    bool Create(const WindowProperties& properties);
 
-		bool ShouldClose() const;
+    void Update();
 
-	private:
+    bool ShouldClose() const;
 
-	};
+private:
 
-}
+    struct WindowData
+    {
+        WindowProperties Properties;
+        GLFWwindow* Handle = nullptr;
+    };
+
+    WindowData m_Data;
+};
+
+} // namespace AtlasEngine

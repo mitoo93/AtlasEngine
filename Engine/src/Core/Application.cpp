@@ -8,6 +8,10 @@ namespace AtlasEngine
 
 Application::Application()
 {
+    WindowProperties props;
+
+    m_Window.Create(props);
+
     std::cout << "Application creada\n";
 }
 
