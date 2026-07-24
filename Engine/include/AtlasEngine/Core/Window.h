@@ -41,6 +41,14 @@ public:
 
 private:
 
+    bool Init();
+    bool CreateNativeWindow();
+
+    void DestroyNativeWindow();
+    void Shutdown();
+
+private:
+
     struct WindowData
     {
         WindowProperties Properties;

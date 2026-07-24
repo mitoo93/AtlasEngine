@@ -18,6 +18,11 @@ Application::Application()
 void Application::Run()
 {
     std::cout << "Engine ejecutandose\n";
+
+    while (!m_Window.ShouldClose())
+    {
+        m_Window.Update();
+    }
 }
 
 }
