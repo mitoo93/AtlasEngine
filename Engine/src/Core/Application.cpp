@@ -42,9 +42,16 @@ Application::Application()
 
     Vertex vertices[]
     {
-        { {  0.0f,  0.5f, 0.0f } },
-        { { -0.5f, -0.5f, 0.0f } },
-        { {  0.5f, -0.5f, 0.0f } }
+        { { -0.5f, -0.5f, 0.0f } }, // 0
+        { {  0.5f, -0.5f, 0.0f } }, // 1
+        { {  0.5f,  0.5f, 0.0f } }, // 2
+        { { -0.5f,  0.5f, 0.0f } }  // 3
+    };
+
+    unsigned int indices[]
+    {
+        0, 1, 2,
+        2, 3, 0
     };
 
     m_VertexArray.Create();
@@ -54,11 +61,16 @@ Application::Application()
     m_VertexBuffer.Create(
         vertices,
         sizeof(vertices));
+    
+    m_IndexBuffer.Create(
+        indices,
+        6);
 
     std::cout << "VBO creado\n";
     
     m_VertexArray.Bind();
     m_VertexBuffer.Bind();
+    m_IndexBuffer.Bind();
 
     glVertexAttribPointer(
         0,
@@ -87,7 +99,11 @@ void Application::Run()
 
         m_VertexArray.Bind();
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(
+            GL_TRIANGLES,
+            m_IndexBuffer.GetCount(),
+            GL_UNSIGNED_INT,
+            nullptr);
 
         GLenum error = glGetError();
 

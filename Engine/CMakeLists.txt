@@ -11,6 +11,7 @@ add_library(Engine STATIC
     src/Renderer/Shader.cpp
     src/Renderer/VertexArray.cpp
     src/Renderer/VertexBuffer.cpp
+    src/Renderer/IndexBuffer.cpp
 )
 
 target_include_directories(Engine
