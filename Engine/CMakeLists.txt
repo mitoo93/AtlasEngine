@@ -16,4 +16,5 @@ target_include_directories(Engine
 target_link_libraries(Engine
     PUBLIC
         glfw
+        glad
 )

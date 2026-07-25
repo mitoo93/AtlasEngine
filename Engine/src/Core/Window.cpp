@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "AtlasEngine/Core/Window.h"
@@ -63,6 +64,13 @@ bool Window::CreateNativeWindow()
 
     glfwMakeContextCurrent(m_Data.Handle);
 
+   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Error inicializando GLAD\n";
+        return false;
+    }
+
+    std::cout << "GLAD inicializado correctamente\n";
     std::cout << "Ventana creada correctamente\n";
     return true;
 }
@@ -82,8 +90,12 @@ void Window::Shutdown()
 
 void Window::Update()
 {
-    glfwPollEvents();
+    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     glfwSwapBuffers(m_Data.Handle);
+
+    glfwPollEvents();
 }
 
 bool Window::ShouldClose() const
