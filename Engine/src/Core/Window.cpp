@@ -90,7 +90,7 @@ void Window::Shutdown()
 
 void Window::Update()
 {
-    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.15f, 1.0f); //se añade color gris oscuro para diferenciar un poco del negro de la consola
     glClear(GL_COLOR_BUFFER_BIT);
 
     glfwSwapBuffers(m_Data.Handle);
