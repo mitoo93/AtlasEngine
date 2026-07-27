@@ -54,35 +54,11 @@ Application::Application()
         2, 3, 0
     };
 
-    m_VertexArray.Create();
-
-    std::cout << "VAO creado\n";
-
-    m_VertexBuffer.Create(
+    m_Mesh.Create(
         vertices,
-        sizeof(vertices));
-    
-    m_IndexBuffer.Create(
+        sizeof(vertices),
         indices,
         6);
-
-    std::cout << "VBO creado\n";
-    
-    m_VertexArray.Bind();
-    m_VertexBuffer.Bind();
-    m_IndexBuffer.Bind();
-
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(Vertex),
-        (void*)0);
-
-    glEnableVertexAttribArray(0);
-
-
 
     std::cout << "Application creada\n";
 }
@@ -97,13 +73,7 @@ void Application::Run()
 
         m_Shader.Bind();
 
-        m_VertexArray.Bind();
-
-        glDrawElements(
-            GL_TRIANGLES,
-            m_IndexBuffer.GetCount(),
-            GL_UNSIGNED_INT,
-            nullptr);
+        m_Mesh.Draw();
 
         GLenum error = glGetError();
 
