@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "AtlasEngine/Math/Matrix4.h"
+
 #include "AtlasEngine/Renderer/Shader.h"
 
 
@@ -141,6 +143,22 @@ void Shader::Bind() const
 void Shader::Unbind() const
 {
     glUseProgram(0);
+}
+
+void Shader::SetMatrix4(
+    const std::string& name,
+    const Matrix4& matrix) const
+{
+    GLint location =
+        glGetUniformLocation(
+            m_RendererID,
+            name.c_str());
+
+    glUniformMatrix4fv(
+        location,
+        1,
+        GL_FALSE,
+        matrix.Data());
 }
 
 }

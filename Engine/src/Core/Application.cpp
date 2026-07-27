@@ -30,6 +30,25 @@ Application::Application()
 
     MeshFactory::CreateQuad(m_Mesh);
 
+    m_Transform.SetPosition(
+    {
+        0.0f,
+        0.0f,
+        0.0f
+    });
+
+    m_Transform.SetScale({
+        0.5f,
+        0.5f,
+        1.0f
+    });
+
+    m_Transform.SetRotation({
+        0.0f,
+        0.0f,
+        45.0f
+    });
+
     std::cout << "Application creada\n";
 }
 
@@ -42,6 +61,10 @@ void Application::Run()
         Renderer::BeginFrame();
 
         m_Shader.Bind();
+
+        m_Shader.SetMatrix4(
+            "u_Model",
+            m_Transform.GetMatrix());
 
         m_Mesh.Draw();
 

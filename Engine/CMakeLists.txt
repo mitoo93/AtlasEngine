@@ -16,6 +16,9 @@ add_library(Engine STATIC
     src/Renderer/BufferLayout.cpp
     src/Renderer/MeshFactory.cpp
     
+    src/Math/Matrix4.cpp
+    src/Math/Transform.cpp
+    
 )
 
 target_include_directories(Engine

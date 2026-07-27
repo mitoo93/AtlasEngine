@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AtlasEngine/Math/Matrix4.h"
+
 #include <string>
 
 namespace AtlasEngine
@@ -21,6 +23,10 @@ public:
 
     void Bind() const;
     void Unbind() const;
+
+    void SetMatrix4(
+    const std::string& name,
+    const Matrix4& matrix) const;
 
 private:
 
