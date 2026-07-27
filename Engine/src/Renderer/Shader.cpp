@@ -2,7 +2,30 @@
 
 #include <iostream>
 
+#include <fstream>
+#include <sstream>
+
 #include "AtlasEngine/Renderer/Shader.h"
+
+
+namespace
+{
+
+std::string ReadFile(const std::string& filepath)
+{
+    std::ifstream file(filepath);
+
+    if (!file.is_open())
+        return "";
+
+    std::stringstream stream;
+
+    stream << file.rdbuf();
+
+    return stream.str();
+}
+
+}
 
 
 namespace AtlasEngine
@@ -80,6 +103,34 @@ bool Shader::Create(const std::string& vertexSource,
     glDeleteShader(fragmentShader);
 
     return true;
+}
+
+bool Shader::Load(
+    const std::string& vertexPath,
+    const std::string& fragmentPath)
+{
+    std::string vertexSource = ReadFile(vertexPath);
+    std::string fragmentSource = ReadFile(fragmentPath);
+
+    if (vertexSource.empty() || fragmentSource.empty())
+    {
+        if (vertexSource.empty())
+        {
+            std::cout << "No se pudo leer: "
+                    << vertexPath << '\n';
+            return false;
+        }
+
+        if (fragmentSource.empty())
+        {
+            std::cout << "No se pudo leer: "
+                    << fragmentPath << '\n';
+            return false;
+        }
+        return false;
+    }
+
+    return Create(vertexSource, fragmentSource);
 }
 
 void Shader::Bind() const

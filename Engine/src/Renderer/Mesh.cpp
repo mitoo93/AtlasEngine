@@ -17,13 +17,17 @@ bool Mesh::Create(
     const void* vertices,
     unsigned int vertexSize,
     const unsigned int* indices,
-    unsigned int indexCount)
+    unsigned int indexCount,
+    const BufferLayout& layout)
+
 {
     m_VertexArray.Create();
 
     m_VertexBuffer.Create(
         vertices,
         vertexSize);
+
+    m_VertexBuffer.SetLayout(layout);
 
     m_IndexBuffer.Create(
         indices,
@@ -33,15 +37,24 @@ bool Mesh::Create(
     m_VertexBuffer.Bind();
     m_IndexBuffer.Bind();
 
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(float) * 3,
-        (void*)0);
+    const BufferLayout& bufferLayout = m_VertexBuffer.GetLayout();
 
-    glEnableVertexAttribArray(0);
+    unsigned int index = 0;
+
+    for (const auto& element : bufferLayout.GetElements())
+    {
+        glVertexAttribPointer(
+            index,
+            element.Count,
+            element.Type,
+            element.Normalized ? GL_TRUE : GL_FALSE,
+            bufferLayout.GetStride(),
+            reinterpret_cast<const void*>(element.Offset));
+
+        glEnableVertexAttribArray(index);
+
+        ++index;
+    }
 
     return true;
 }

@@ -13,6 +13,7 @@ add_library(Engine STATIC
     src/Renderer/VertexBuffer.cpp
     src/Renderer/IndexBuffer.cpp
     src/Renderer/Mesh.cpp
+    src/Renderer/BufferLayout.cpp
 )
 
 target_include_directories(Engine

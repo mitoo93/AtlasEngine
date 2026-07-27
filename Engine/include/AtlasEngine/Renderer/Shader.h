@@ -15,6 +15,10 @@ public:
     bool Create(const std::string& vertexSource,
                 const std::string& fragmentSource);
 
+    bool Load(
+        const std::string& vertexPath,
+        const std::string& fragmentPath);
+
     void Bind() const;
     void Unbind() const;
 

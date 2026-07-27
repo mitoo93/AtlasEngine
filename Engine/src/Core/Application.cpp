@@ -16,29 +16,16 @@ Application::Application()
 
     m_Window.Create(props);
 
-    const std::string vertexShader = R"(#version 330 core
-
-    layout(location = 0) in vec3 a_Position;
-
-    void main()
+    if (!m_Shader.Load(
+        "Assets/Shaders/Basic.vert",
+        "Assets/Shaders/Basic.frag"))
     {
-        gl_Position = vec4(a_Position, 1.0);
+        std::cout << "Error creando el shader\n";
     }
-    )";
-
-    const std::string fragmentShader = R"(#version 330 core
-
-    out vec4 FragColor;
-
-    void main()
+    else
     {
-        FragColor = vec4(1.0, 0.3, 0.2, 1.0);
+        std::cout << "Shader creado\n";
     }
-    )";
-
-    m_Shader.Create(vertexShader, fragmentShader);
-
-    std::cout << "Shader creado\n";
 
     Vertex vertices[]
     {
@@ -54,11 +41,15 @@ Application::Application()
         2, 3, 0
     };
 
+    BufferLayout layout;
+    layout.PushFloat(3);
+
     m_Mesh.Create(
         vertices,
         sizeof(vertices),
         indices,
-        6);
+        6,
+        layout);
 
     std::cout << "Application creada\n";
 }

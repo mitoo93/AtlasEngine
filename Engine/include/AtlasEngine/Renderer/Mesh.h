@@ -3,6 +3,7 @@
 #include "AtlasEngine/Renderer/VertexArray.h"
 #include "AtlasEngine/Renderer/VertexBuffer.h"
 #include "AtlasEngine/Renderer/IndexBuffer.h"
+#include "AtlasEngine/Renderer/BufferLayout.h"
 
 namespace AtlasEngine
 {
@@ -18,7 +19,8 @@ public:
         const void* vertices,
         unsigned int vertexSize,
         const unsigned int* indices,
-        unsigned int indexCount);
+        unsigned int indexCount,
+        const BufferLayout& layout);
 
     void Bind() const;
 
