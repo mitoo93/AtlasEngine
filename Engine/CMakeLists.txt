@@ -14,6 +14,8 @@ add_library(Engine STATIC
     src/Renderer/IndexBuffer.cpp
     src/Renderer/Mesh.cpp
     src/Renderer/BufferLayout.cpp
+    src/Renderer/MeshFactory.cpp
+    
 )
 
 target_include_directories(Engine

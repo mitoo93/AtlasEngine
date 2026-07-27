@@ -4,6 +4,7 @@
 #include "AtlasEngine/Core/Application.h"
 #include "AtlasEngine/Core/Window.h"
 #include "AtlasEngine/Renderer/Shader.h"
+#include "AtlasEngine/Renderer/MeshFactory.h"
 
 #include <iostream>
 
@@ -27,29 +28,7 @@ Application::Application()
         std::cout << "Shader creado\n";
     }
 
-    Vertex vertices[]
-    {
-        { { -0.5f, -0.5f, 0.0f } }, // 0
-        { {  0.5f, -0.5f, 0.0f } }, // 1
-        { {  0.5f,  0.5f, 0.0f } }, // 2
-        { { -0.5f,  0.5f, 0.0f } }  // 3
-    };
-
-    unsigned int indices[]
-    {
-        0, 1, 2,
-        2, 3, 0
-    };
-
-    BufferLayout layout;
-    layout.PushFloat(3);
-
-    m_Mesh.Create(
-        vertices,
-        sizeof(vertices),
-        indices,
-        6,
-        layout);
+    MeshFactory::CreateQuad(m_Mesh);
 
     std::cout << "Application creada\n";
 }

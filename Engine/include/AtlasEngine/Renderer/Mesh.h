@@ -4,6 +4,8 @@
 #include "AtlasEngine/Renderer/VertexBuffer.h"
 #include "AtlasEngine/Renderer/IndexBuffer.h"
 #include "AtlasEngine/Renderer/BufferLayout.h"
+#include <vector>
+#include "AtlasEngine/Renderer/Vertex.h"
 
 namespace AtlasEngine
 {
@@ -16,10 +18,8 @@ public:
     ~Mesh();
 
     bool Create(
-        const void* vertices,
-        unsigned int vertexSize,
-        const unsigned int* indices,
-        unsigned int indexCount,
+        const std::vector<Vertex>& vertices,
+        const std::vector<unsigned int>& indices,
         const BufferLayout& layout);
 
     void Bind() const;

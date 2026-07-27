@@ -14,47 +14,26 @@ Mesh::~Mesh()
 }
 
 bool Mesh::Create(
-    const void* vertices,
-    unsigned int vertexSize,
-    const unsigned int* indices,
-    unsigned int indexCount,
+    const std::vector<Vertex>& vertices,
+    const std::vector<unsigned int>& indices,
     const BufferLayout& layout)
 
 {
     m_VertexArray.Create();
 
     m_VertexBuffer.Create(
-        vertices,
-        vertexSize);
+        vertices.data(),
+        static_cast<unsigned int>(vertices.size() * sizeof(Vertex)));
 
     m_VertexBuffer.SetLayout(layout);
 
     m_IndexBuffer.Create(
-        indices,
-        indexCount);
+        indices.data(),
+        static_cast<unsigned int>(indices.size()));
 
-    m_VertexArray.Bind();
-    m_VertexBuffer.Bind();
+    m_VertexArray.AddVertexBuffer(m_VertexBuffer);
+
     m_IndexBuffer.Bind();
-
-    const BufferLayout& bufferLayout = m_VertexBuffer.GetLayout();
-
-    unsigned int index = 0;
-
-    for (const auto& element : bufferLayout.GetElements())
-    {
-        glVertexAttribPointer(
-            index,
-            element.Count,
-            element.Type,
-            element.Normalized ? GL_TRUE : GL_FALSE,
-            bufferLayout.GetStride(),
-            reinterpret_cast<const void*>(element.Offset));
-
-        glEnableVertexAttribArray(index);
-
-        ++index;
-    }
 
     return true;
 }

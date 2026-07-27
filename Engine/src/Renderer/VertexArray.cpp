@@ -35,4 +35,28 @@ void VertexArray::Unbind() const
     glBindVertexArray(0);
 }
 
+void VertexArray::AddVertexBuffer(const VertexBuffer& vertexBuffer)
+{
+    Bind();
+
+    vertexBuffer.Bind();
+
+    const BufferLayout& layout = vertexBuffer.GetLayout();
+
+    for (const auto& element : layout.GetElements())
+    {
+        glVertexAttribPointer(
+            m_NextAttributeIndex,
+            element.Count,
+            element.Type,
+            element.Normalized ? GL_TRUE : GL_FALSE,
+            layout.GetStride(),
+            reinterpret_cast<const void*>(element.Offset));
+
+        glEnableVertexAttribArray(m_NextAttributeIndex);
+
+        ++m_NextAttributeIndex;
+    }
+}
+
 } // namespace AtlasEngine
