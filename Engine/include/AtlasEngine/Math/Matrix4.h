@@ -28,6 +28,10 @@ public:
 
     static Matrix4 RotateZ(float angleDegrees);
 
+    static Matrix4 RotateX(float angleDegrees);
+
+    static Matrix4 RotateY(float angleDegrees);
+
 private:
 
     float m_Values[16];

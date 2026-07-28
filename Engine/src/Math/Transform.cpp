@@ -52,6 +52,16 @@ Matrix4 Transform::GetMatrix() const
 
     *
 
+    Matrix4::RotateY(
+        m_Rotation.y)
+
+    *
+
+    Matrix4::RotateX(
+        m_Rotation.x)
+
+    *
+
     Matrix4::Scale(
         m_Scale.x,
         m_Scale.y,

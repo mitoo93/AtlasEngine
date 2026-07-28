@@ -44,9 +44,9 @@ Application::Application()
     });
 
     m_Transform.SetRotation({
-        0.0f,
-        0.0f,
-        45.0f
+        30.0f,
+        30.0f,
+        30.0f
     });
 
     std::cout << "Application creada\n";

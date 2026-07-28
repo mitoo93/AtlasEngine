@@ -91,4 +91,40 @@ Matrix4 Matrix4::RotateZ(float angleDegrees)
     return matrix;
 }
 
+Matrix4 Matrix4::RotateX(float angleDegrees)
+{
+    Matrix4 matrix = Identity();
+
+    float angle = Math::ToRadians(angleDegrees);
+
+    float c = std::cos(angle);
+    float s = std::sin(angle);
+
+    matrix.m_Values[5] = c;
+    matrix.m_Values[6] = s;
+
+    matrix.m_Values[9] = -s;
+    matrix.m_Values[10] = c;
+
+    return matrix;
+}
+
+Matrix4 Matrix4::RotateY(float angleDegrees)
+{
+    Matrix4 matrix = Identity();
+
+    float angle = Math::ToRadians(angleDegrees);
+
+    float c = std::cos(angle);
+    float s = std::sin(angle);
+
+    matrix.m_Values[0] = c;
+    matrix.m_Values[2] = -s;
+
+    matrix.m_Values[8] = s;
+    matrix.m_Values[10] = c;
+
+    return matrix;
+}
+
 }
