@@ -127,4 +127,33 @@ Matrix4 Matrix4::RotateY(float angleDegrees)
     return matrix;
 }
 
+Matrix4 Matrix4::Perspective(
+    float fovDegrees,
+    float aspectRatio,
+    float nearPlane,
+    float farPlane)
+{
+    Matrix4 matrix;
+
+    float fovRadians = Math::ToRadians(fovDegrees);
+
+    float tanHalfFov = std::tan(fovRadians * 0.5f);
+
+    matrix.m_Values[0] = 1.0f / (aspectRatio * tanHalfFov);
+
+    matrix.m_Values[5] = 1.0f / tanHalfFov;
+
+    matrix.m_Values[10] =
+        -(farPlane + nearPlane) /
+        (farPlane - nearPlane);
+
+    matrix.m_Values[11] = -1.0f;
+
+    matrix.m_Values[14] =
+        -(2.0f * farPlane * nearPlane) /
+        (farPlane - nearPlane);
+
+    return matrix;
+}
+
 }

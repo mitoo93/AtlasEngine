@@ -17,6 +17,9 @@ Application::Application()
 
     m_Window.Create(props);
 
+    m_Camera.SetAspectRatio(
+        props.Width / (float)props.Height);
+
     if (!m_Shader.Load(
         "Assets/Shaders/Basic.vert",
         "Assets/Shaders/Basic.frag"))
@@ -30,11 +33,10 @@ Application::Application()
 
     MeshFactory::CreateQuad(m_Mesh);
 
-    m_Transform.SetPosition(
-    {
+    m_Transform.SetPosition({
         0.0f,
         0.0f,
-        0.0f
+        -2.0f
     });
 
     m_Transform.SetScale({
@@ -47,6 +49,18 @@ Application::Application()
         30.0f,
         30.0f,
         30.0f
+    });
+
+    m_Camera.SetPosition({
+        0.0f,
+        0.0f,
+        0.0f
+    });
+
+    m_Camera.SetRotation({ 
+        0.0f, 
+        0.0f, 
+        0.0f 
     });
 
     std::cout << "Application creada\n";
@@ -65,6 +79,14 @@ void Application::Run()
         m_Shader.SetMatrix4(
             "u_Model",
             m_Transform.GetMatrix());
+
+        m_Shader.SetMatrix4(
+            "u_View",
+            m_Camera.GetViewMatrix());
+
+        m_Shader.SetMatrix4(
+            "u_Projection",
+            m_Camera.GetProjectionMatrix());
 
         m_Mesh.Draw();
 

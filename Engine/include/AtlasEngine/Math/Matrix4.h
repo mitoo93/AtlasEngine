@@ -32,6 +32,12 @@ public:
 
     static Matrix4 RotateY(float angleDegrees);
 
+    static Matrix4 Perspective(
+        float fovDegrees,
+        float aspectRatio,
+        float nearPlane,
+        float farPlane);
+
 private:
 
     float m_Values[16];

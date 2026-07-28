@@ -15,6 +15,7 @@ add_library(Engine STATIC
     src/Renderer/Mesh.cpp
     src/Renderer/BufferLayout.cpp
     src/Renderer/MeshFactory.cpp
+    src/Renderer/Camera.cpp
     
     src/Math/Matrix4.cpp
     src/Math/Transform.cpp

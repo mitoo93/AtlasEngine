@@ -5,6 +5,7 @@
 #include "AtlasEngine/Renderer/Vertex.h"
 #include "AtlasEngine/Renderer/Mesh.h"
 #include "AtlasEngine/Math/Transform.h"
+#include "AtlasEngine/Renderer/Camera.h"
 
 namespace AtlasEngine
 {
@@ -24,6 +25,7 @@ private:
     Shader m_Shader;
     Mesh m_Mesh;
     Transform m_Transform;
+    Camera m_Camera;
 };
 
 }
