@@ -15,6 +15,9 @@ public:
     void SetPosition(const Vector3& position);
     void SetRotation(const Vector3& rotation);
     void SetScale(const Vector3& scale);
+    void Translate(float x, float y, float z);
+    void Rotate(float x, float y, float z);
+    void Scale(float x, float y, float z);
 
     const Vector3& GetPosition() const;
     const Vector3& GetRotation() const;

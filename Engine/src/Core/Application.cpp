@@ -1,10 +1,13 @@
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 
 #include "AtlasEngine/Renderer/Renderer.h"
 #include "AtlasEngine/Core/Application.h"
 #include "AtlasEngine/Core/Window.h"
 #include "AtlasEngine/Renderer/Shader.h"
 #include "AtlasEngine/Renderer/MeshFactory.h"
+#include "AtlasEngine/Core/Time.h"
 
 #include <iostream>
 
@@ -72,6 +75,28 @@ void Application::Run()
 
     while (!m_Window.ShouldClose())
     {
+        Time::Update(
+        static_cast<float>(glfwGetTime()));
+
+        m_Transform.Rotate(
+            0.0f,
+            0.0f,
+            90.0f * Time::GetDeltaTime());
+
+        static float accumulator = 0.0f;
+
+        accumulator += Time::GetDeltaTime();
+
+        if (accumulator >= 1.0f)
+        {
+            accumulator = 0.0f;
+
+            std::cout
+                << "FPS: "
+                << 1.0f / Time::GetDeltaTime()
+                << '\n';
+        }
+        
         Renderer::BeginFrame();
 
         m_Shader.Bind();
