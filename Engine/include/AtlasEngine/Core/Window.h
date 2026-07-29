@@ -28,6 +28,7 @@ struct WindowProperties
 
 class Window
 {
+    
 public:
 
     Window();
@@ -38,6 +39,8 @@ public:
     void Update();
 
     bool ShouldClose() const;
+
+    GLFWwindow* GetNativeWindow() const;
 
 private:
 

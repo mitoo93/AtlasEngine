@@ -1,4 +1,5 @@
 #include "AtlasEngine/Renderer/Camera.h"
+#include "AtlasEngine/Math/Math.h"
 
 namespace AtlasEngine
 {
@@ -8,9 +9,37 @@ void Camera::SetPosition(const Vector3& position)
     m_Position = position;
 }
 
+void Camera::Translate(float x, float y, float z)
+{
+    m_Position.x += x;
+    m_Position.y += y;
+    m_Position.z += z;
+}
+
+void Camera::Translate(
+    const Vector3& translation)
+{
+    m_Position += translation;
+}
+
 void Camera::SetRotation(const Vector3& rotation)
 {
     m_Rotation = rotation;
+}
+
+void Camera::Rotate(const Vector3& rotation)
+{
+    m_Rotation += rotation;
+}
+
+void Camera::Rotate(float x, float y, float z)
+{
+    Rotate(
+    {
+        x,
+        y,
+        z
+    });
 }
 
 const Vector3& Camera::GetPosition() const
@@ -50,6 +79,44 @@ Matrix4 Camera::GetProjectionMatrix() const
 void Camera::SetAspectRatio(float aspectRatio)
 {
     m_AspectRatio = aspectRatio;
+}
+
+Vector3 Camera::GetForward() const
+{
+    float pitch =
+        Math::ToRadians(m_Rotation.x);
+
+    float yaw =
+        Math::ToRadians(m_Rotation.y);
+
+    Vector3 forward;
+
+    forward.x =
+        std::cos(pitch) * std::sin(yaw);
+
+    forward.y =
+        std::sin(pitch);
+
+    forward.z =
+        -std::cos(pitch) * std::cos(yaw);
+
+    return forward.Normalized();
+}
+
+Vector3 Camera::GetRight() const
+{
+    Vector3 worldUp
+    {
+        0.0f,
+        1.0f,
+        0.0f
+    };
+
+    return
+        Vector3::Cross(
+            GetForward(),
+            worldUp)
+        .Normalized();
 }
 
 }

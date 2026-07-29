@@ -8,6 +8,7 @@
 #include "AtlasEngine/Renderer/Shader.h"
 #include "AtlasEngine/Renderer/MeshFactory.h"
 #include "AtlasEngine/Core/Time.h"
+#include "AtlasEngine/Core/Input.h"
 
 #include <iostream>
 
@@ -19,6 +20,9 @@ Application::Application()
     WindowProperties props;
 
     m_Window.Create(props);
+
+    Input::SetNativeWindow(
+        m_Window.GetNativeWindow());
 
     m_Camera.SetAspectRatio(
         props.Width / (float)props.Height);
@@ -60,10 +64,11 @@ Application::Application()
         0.0f
     });
 
-    m_Camera.SetRotation({ 
-        0.0f, 
-        0.0f, 
-        0.0f 
+    m_Camera.SetRotation(
+    {
+        0.0f,
+        0.0f,
+        0.0f
     });
 
     std::cout << "Application creada\n";
@@ -78,12 +83,79 @@ void Application::Run()
         Time::Update(
         static_cast<float>(glfwGetTime()));
 
+        const float cameraSpeed = 2.0f;
+        const float rotationSpeed = 90.0f;
+
+        float movement =
+            cameraSpeed *
+            Time::GetDeltaTime();
+
+        if (Input::IsKeyPressed(Key::W))
+        {
+            m_Camera.Translate(
+                m_Camera.GetForward()
+                * movement);
+        }
+
+        if (Input::IsKeyPressed(Key::S))
+        {
+            m_Camera.Translate(
+                m_Camera.GetForward()
+                * -movement);
+        }
+
+        if (Input::IsKeyPressed(Key::D))
+        {
+            m_Camera.Translate(
+                m_Camera.GetRight()
+                * movement);
+        }
+
+        if (Input::IsKeyPressed(Key::A))
+        {
+            m_Camera.Translate(
+                m_Camera.GetRight()
+                * -movement);
+        }
+
+        if (Input::IsKeyPressed(Key::Left))
+        {
+            m_Camera.Rotate(
+                0.0f,
+                -rotationSpeed * Time::GetDeltaTime(),
+                0.0f);
+        }
+
+        if (Input::IsKeyPressed(Key::Right))
+        {
+            m_Camera.Rotate(
+                0.0f,
+                rotationSpeed * Time::GetDeltaTime(),
+                0.0f);
+        }
+
+        if (Input::IsKeyPressed(Key::Up))
+        {
+            m_Camera.Rotate(
+                -rotationSpeed * Time::GetDeltaTime(),
+                0.0f,
+                0.0f);
+        }
+
+        if (Input::IsKeyPressed(Key::Down))
+        {
+            m_Camera.Rotate(
+                rotationSpeed * Time::GetDeltaTime(),
+                0.0f,
+                0.0f);
+        }
+
         m_Transform.Rotate(
             0.0f,
             0.0f,
             90.0f * Time::GetDeltaTime());
 
-        static float accumulator = 0.0f;
+        /* static float accumulator = 0.0f;
 
         accumulator += Time::GetDeltaTime();
 
@@ -95,7 +167,7 @@ void Application::Run()
                 << "FPS: "
                 << 1.0f / Time::GetDeltaTime()
                 << '\n';
-        }
+        } */
         
         Renderer::BeginFrame();
 
@@ -121,6 +193,31 @@ void Application::Run()
         {
             std::cout << "OpenGL Error: " << error << '\n';
         }
+
+        /* if (Input::IsKeyPressed(Key::Space))
+        {
+            std::cout << "SPACE\n";
+        }
+
+        if (Input::IsKeyPressed(Key::W))
+        {
+            std::cout << "W\n";
+        }
+
+        if (Input::IsKeyPressed(Key::A))
+        {
+            std::cout << "A\n";
+        }
+
+        if (Input::IsKeyPressed(Key::S))
+        {
+            std::cout << "S\n";
+        }
+
+        if (Input::IsKeyPressed(Key::D))
+        {
+            std::cout << "D\n";
+        } */
 
         m_Window.Update();
 

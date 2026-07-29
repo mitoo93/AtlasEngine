@@ -1,11 +1,47 @@
+#include <GLFW/glfw3.h>
+
 #include "AtlasEngine/Core/Input.h"
 
 namespace AtlasEngine
 {
 
-bool Input::IsKeyPressed(int key)
+void* Input::s_NativeWindow = nullptr;
+
+void Input::SetNativeWindow(void* window)
 {
-    return false;
+    s_NativeWindow = window;
+}
+
+static int ToGLFWKey(AtlasEngine::Key key)
+{
+    switch (key)
+    {
+        case AtlasEngine::Key::Space:  return GLFW_KEY_SPACE;
+        case AtlasEngine::Key::Escape: return GLFW_KEY_ESCAPE;
+
+        case AtlasEngine::Key::W: return GLFW_KEY_W;
+        case AtlasEngine::Key::A: return GLFW_KEY_A;
+        case AtlasEngine::Key::S: return GLFW_KEY_S;
+        case AtlasEngine::Key::D: return GLFW_KEY_D;
+
+        case AtlasEngine::Key::Up:    return GLFW_KEY_UP;
+        case AtlasEngine::Key::Down:  return GLFW_KEY_DOWN;
+        case AtlasEngine::Key::Left:  return GLFW_KEY_LEFT;
+        case AtlasEngine::Key::Right: return GLFW_KEY_RIGHT;
+
+        default:
+            return GLFW_KEY_UNKNOWN;
+    }
+}
+
+bool Input::IsKeyPressed(Key key)
+{
+    GLFWwindow* window =
+        static_cast<GLFWwindow*>(s_NativeWindow);
+
+    return glfwGetKey(
+        window,
+        ToGLFWKey(key)) == GLFW_PRESS;
 }
 
 }

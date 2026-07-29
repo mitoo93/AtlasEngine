@@ -12,6 +12,11 @@ public:
 
     void SetPosition(const Vector3& position);
     void SetRotation(const Vector3& rotation);
+
+    void Translate(float x, float y, float z);
+    void Translate(const Vector3& translation);
+    void Rotate(float x, float y, float z);
+    void Rotate(const Vector3& rotation);
     
     void SetAspectRatio(float aspectRatio);
 
@@ -20,6 +25,9 @@ public:
 
     Matrix4 GetViewMatrix() const;
     Matrix4 GetProjectionMatrix() const;
+
+    Vector3 GetForward() const;
+    Vector3 GetRight() const;
 
 private:
 

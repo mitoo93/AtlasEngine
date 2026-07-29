@@ -108,4 +108,9 @@
         return glfwWindowShouldClose(m_Data.Handle);
     }
 
+    GLFWwindow* Window::GetNativeWindow() const
+    {
+        return m_Data.Handle;
+    }
+
     } // namespace AtlasEngine
