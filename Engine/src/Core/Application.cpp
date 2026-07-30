@@ -85,6 +85,18 @@ void Application::Run()
         Time::Update(
         static_cast<float>(glfwGetTime()));
 
+        Input::Update();
+
+        if (Input::IsKeyPressed(Key::Space))
+        {
+            std::cout << "SPACE PRESSED\n";
+        }
+
+        if (Input::IsKeyReleased(Key::Space))
+        {
+            std::cout << "SPACE RELEASED\n";
+        }
+
         m_CameraController.Update(
             m_Camera,
             Time::GetDeltaTime());

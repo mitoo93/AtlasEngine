@@ -12,9 +12,15 @@ public:
 
     static bool IsKeyPressed(Key key);
 
+    static bool IsKeyDown(Key key);
+
+    static bool IsKeyReleased(Key key);
+
     static void SetNativeWindow(void* window);
 
     static Vector2 GetMousePosition();
+
+    static void Update();
 
 private:
 

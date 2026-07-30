@@ -15,83 +15,54 @@ void CameraController::Update(
 {
 
     float movement =
-    m_MoveSpeed * deltaTime;
+        m_MoveSpeed * deltaTime;
 
-    float rotation =
-        m_RotationSpeed * deltaTime;
+    Vector3 movementDirection;
 
-    if (Input::IsKeyPressed(Key::W))
+    if (Input::IsKeyDown(Key::W))
     {
+        movementDirection +=
+            camera.GetForward();
+    }
+
+    if (Input::IsKeyDown(Key::S))
+    {
+        movementDirection -=
+            camera.GetForward();
+    }
+
+    if (Input::IsKeyDown(Key::D))
+    {
+        movementDirection +=
+            camera.GetRight();
+    }
+
+    if (Input::IsKeyDown(Key::A))
+    {
+        movementDirection -=
+            camera.GetRight();
+    }
+
+    if (Input::IsKeyDown(Key::Q))
+    {
+        movementDirection +=
+            camera.GetUp();
+    }
+
+    if (Input::IsKeyDown(Key::E))
+    {
+        movementDirection -=
+            camera.GetUp();
+    }
+
+    if (movementDirection.Length() > 0.0f)
+    {
+        movementDirection =
+            movementDirection.Normalized();
+
         camera.Translate(
-            camera.GetForward() *
+            movementDirection *
             movement);
-    }
-
-    if (Input::IsKeyPressed(Key::S))
-    {
-        camera.Translate(
-            camera.GetForward() *
-            -movement);
-    }
-
-    if (Input::IsKeyPressed(Key::A))
-    {
-        camera.Translate(
-            camera.GetRight() *
-            -movement);
-    }
-
-    if (Input::IsKeyPressed(Key::D))
-    {
-        camera.Translate(
-            camera.GetRight() *
-            movement);
-    }
-
-    /* if (Input::IsKeyPressed(Key::Left))
-    {
-        camera.Rotate(
-            0.0f,
-            -rotation,
-            0.0f);
-    }
-
-    if (Input::IsKeyPressed(Key::Right))
-    {
-        camera.Rotate(
-            0.0f,
-            rotation,
-            0.0f);
-    }
-
-    if (Input::IsKeyPressed(Key::Up))
-    {
-        camera.Rotate(
-            -rotation,
-            0.0f,
-            0.0f);
-    }
-
-    if (Input::IsKeyPressed(Key::Down))
-    {
-        camera.Rotate(
-            rotation,
-            0.0f,
-            0.0f);
-    } */
-
-    if (Input::IsKeyPressed(Key::Q))
-    {
-        camera.Translate(
-            camera.GetUp() *
-            movement);
-    }
-
-    if (Input::IsKeyPressed(Key::E))
-    {
-        camera.Translate(
-            camera.GetUp() *
-            -movement);
     }
 
     Vector2 currentMouse =
@@ -111,25 +82,29 @@ void CameraController::Update(
     m_LastMousePosition =
         currentMouse;
 
-    camera.Rotate(
-        -mouseDelta.y * m_MouseSensitivity,
-        mouseDelta.x * m_MouseSensitivity,
-        0.0f);
+    Vector3 rotation =
+        camera.GetRotation();
 
-    if (mouseDelta.x != 0.0f ||
-        mouseDelta.y != 0.0f)
-    /* {
-        std::cout
-            << "Mouse Delta: "
-            << mouseDelta.x
-            << ", "
-            << mouseDelta.y
-            << '\n';
-    } */
-    camera.Rotate(
-        -mouseDelta.y * m_MouseSensitivity,
-        mouseDelta.x * m_MouseSensitivity,
-        0.0f);
+    rotation.y +=
+        mouseDelta.x *
+        m_MouseSensitivity;
+
+    rotation.x -=
+        mouseDelta.y *
+        m_MouseSensitivity;
+
+    if (rotation.x > 89.0f)
+    {
+        rotation.x = 89.0f;
+    }
+
+    if (rotation.x < -89.0f)
+    {
+        rotation.x = -89.0f;
+    }
+
+    camera.SetRotation(rotation);
+
 }
 
 void CameraController::SetMoveSpeed(float speed)
