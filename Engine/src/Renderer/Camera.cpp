@@ -119,4 +119,13 @@ Vector3 Camera::GetRight() const
         .Normalized();
 }
 
+Vector3 Camera::GetUp() const
+{
+    return
+        Vector3::Cross(
+            GetRight(),
+            GetForward())
+        .Normalized();
+}
+
 }

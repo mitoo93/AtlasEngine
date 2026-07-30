@@ -24,6 +24,9 @@ static int ToGLFWKey(AtlasEngine::Key key)
         case AtlasEngine::Key::S: return GLFW_KEY_S;
         case AtlasEngine::Key::D: return GLFW_KEY_D;
 
+        case AtlasEngine::Key::Q: return GLFW_KEY_Q;
+        case AtlasEngine::Key::E: return GLFW_KEY_E;
+
         case AtlasEngine::Key::Up:    return GLFW_KEY_UP;
         case AtlasEngine::Key::Down:  return GLFW_KEY_DOWN;
         case AtlasEngine::Key::Left:  return GLFW_KEY_LEFT;
@@ -42,6 +45,30 @@ bool Input::IsKeyPressed(Key key)
     return glfwGetKey(
         window,
         ToGLFWKey(key)) == GLFW_PRESS;
+}
+
+Vector2 Input::GetMousePosition()
+{
+    GLFWwindow* window =
+        static_cast<GLFWwindow*>(s_NativeWindow);
+
+    Vector2 position;
+
+    double mouseX;
+    double mouseY;
+
+    glfwGetCursorPos(
+        window,
+        &mouseX,
+        &mouseY);
+
+    position.x =
+        static_cast<float>(mouseX);
+
+    position.y =
+        static_cast<float>(mouseY);
+
+    return position;
 }
 
 }

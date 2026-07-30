@@ -19,6 +19,8 @@ add_library(Engine STATIC
     
     src/Math/Matrix4.cpp
     src/Math/Transform.cpp
+
+    src/Controllers/CameraController.cpp
     
 )
 

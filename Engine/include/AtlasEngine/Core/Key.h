@@ -7,19 +7,21 @@ enum class Key
 {
     Unknown = 0,
 
-    Space,
-
-    Escape,
-
     W,
     A,
     S,
     D,
 
+    Q,
+    E,
+
     Up,
     Down,
     Left,
-    Right
+    Right,
+
+    Space,
+    Escape
 };
 
 }

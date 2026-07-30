@@ -28,6 +28,7 @@ public:
 
     Vector3 GetForward() const;
     Vector3 GetRight() const;
+    Vector3 GetUp() const;
 
 private:
 

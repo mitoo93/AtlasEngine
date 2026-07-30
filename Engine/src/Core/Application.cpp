@@ -21,6 +21,8 @@ Application::Application()
 
     m_Window.Create(props);
 
+    m_Window.SetCursorEnabled(false);
+
     Input::SetNativeWindow(
         m_Window.GetNativeWindow());
 
@@ -83,72 +85,9 @@ void Application::Run()
         Time::Update(
         static_cast<float>(glfwGetTime()));
 
-        const float cameraSpeed = 2.0f;
-        const float rotationSpeed = 90.0f;
-
-        float movement =
-            cameraSpeed *
-            Time::GetDeltaTime();
-
-        if (Input::IsKeyPressed(Key::W))
-        {
-            m_Camera.Translate(
-                m_Camera.GetForward()
-                * movement);
-        }
-
-        if (Input::IsKeyPressed(Key::S))
-        {
-            m_Camera.Translate(
-                m_Camera.GetForward()
-                * -movement);
-        }
-
-        if (Input::IsKeyPressed(Key::D))
-        {
-            m_Camera.Translate(
-                m_Camera.GetRight()
-                * movement);
-        }
-
-        if (Input::IsKeyPressed(Key::A))
-        {
-            m_Camera.Translate(
-                m_Camera.GetRight()
-                * -movement);
-        }
-
-        if (Input::IsKeyPressed(Key::Left))
-        {
-            m_Camera.Rotate(
-                0.0f,
-                -rotationSpeed * Time::GetDeltaTime(),
-                0.0f);
-        }
-
-        if (Input::IsKeyPressed(Key::Right))
-        {
-            m_Camera.Rotate(
-                0.0f,
-                rotationSpeed * Time::GetDeltaTime(),
-                0.0f);
-        }
-
-        if (Input::IsKeyPressed(Key::Up))
-        {
-            m_Camera.Rotate(
-                -rotationSpeed * Time::GetDeltaTime(),
-                0.0f,
-                0.0f);
-        }
-
-        if (Input::IsKeyPressed(Key::Down))
-        {
-            m_Camera.Rotate(
-                rotationSpeed * Time::GetDeltaTime(),
-                0.0f,
-                0.0f);
-        }
+        m_CameraController.Update(
+            m_Camera,
+            Time::GetDeltaTime());
 
         m_Transform.Rotate(
             0.0f,
@@ -218,6 +157,11 @@ void Application::Run()
         {
             std::cout << "D\n";
         } */
+
+        if (Input::IsKeyPressed(Key::Escape))
+        {
+            break;
+        }
 
         m_Window.Update();
 

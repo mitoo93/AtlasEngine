@@ -42,6 +42,8 @@ public:
 
     GLFWwindow* GetNativeWindow() const;
 
+    void SetCursorEnabled(bool enabled);
+
 private:
 
     bool Init();
@@ -49,6 +51,7 @@ private:
 
     void DestroyNativeWindow();
     void Shutdown();
+    
 
 private:
 

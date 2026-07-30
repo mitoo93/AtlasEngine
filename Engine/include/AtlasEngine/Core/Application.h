@@ -6,6 +6,7 @@
 #include "AtlasEngine/Renderer/Mesh.h"
 #include "AtlasEngine/Math/Transform.h"
 #include "AtlasEngine/Renderer/Camera.h"
+#include "AtlasEngine/Controllers/CameraController.h"
 
 namespace AtlasEngine
 {
@@ -26,6 +27,7 @@ private:
     Mesh m_Mesh;
     Transform m_Transform;
     Camera m_Camera;
+    CameraController m_CameraController;
 };
 
 }
