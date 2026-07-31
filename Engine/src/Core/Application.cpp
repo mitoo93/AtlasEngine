@@ -1,7 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-
 #include "AtlasEngine/Renderer/Renderer.h"
 #include "AtlasEngine/Core/Application.h"
 #include "AtlasEngine/Core/Window.h"
@@ -9,7 +8,10 @@
 #include "AtlasEngine/Renderer/MeshFactory.h"
 #include "AtlasEngine/Core/Time.h"
 #include "AtlasEngine/Core/Input.h"
+
 #include "AtlasEngine/Scene/Scene.h"
+#include "AtlasEngine/Scene/MeshRendererComponent.h"
+#include "AtlasEngine/Scene/CameraComponent.h"
 
 #include <iostream>
 
@@ -27,8 +29,9 @@ Application::Application()
     Input::SetNativeWindow(
         m_Window.GetNativeWindow());
 
-    m_Camera.SetAspectRatio(
-        props.Width / (float)props.Height);
+    //----------------------------------------------------
+    // Shader
+    //----------------------------------------------------
 
     if (!m_Shader.Load(
         "Assets/Shaders/Basic.vert",
@@ -41,78 +44,74 @@ Application::Application()
         std::cout << "Shader creado\n";
     }
 
-    MeshFactory::CreateQuad(m_Mesh);
+    //----------------------------------------------------
+    // Camera Entity
+    //----------------------------------------------------
 
-    m_Transform.SetPosition({
+    Entity& camera =
+        m_Scene.CreateEntity("MainCamera");
+
+    camera.AddComponent<CameraComponent>();
+
+    CameraComponent& cameraComponent =
+        camera.GetComponent<CameraComponent>();
+
+    cameraComponent.GetCamera().SetAspectRatio(
+        props.Width / (float)props.Height);
+
+    cameraComponent.GetCamera().SetPosition({
+        0.0f,
+        0.0f,
+        0.0f
+    });
+
+    cameraComponent.GetCamera().SetRotation({
+        0.0f,
+        0.0f,
+        0.0f
+    });
+
+    //----------------------------------------------------
+    // Player
+    //----------------------------------------------------
+
+    Entity& player =
+        m_Scene.CreateEntity("Player");
+
+    player.GetTransform().SetPosition({
         0.0f,
         0.0f,
         -2.0f
     });
 
-    m_Transform.SetScale({
+    player.GetTransform().SetScale({
         0.5f,
         0.5f,
         1.0f
     });
 
-    m_Transform.SetRotation({
+    player.GetTransform().SetRotation({
         30.0f,
         30.0f,
         30.0f
     });
 
-    m_Camera.SetPosition({
-        0.0f,
-        0.0f,
-        0.0f
-    });
+    player.AddComponent<MeshRendererComponent>();
 
-    m_Camera.SetRotation(
-    {
-        0.0f,
-        0.0f,
-        0.0f
-    });
+    MeshRendererComponent& renderer =
+        player.GetComponent<MeshRendererComponent>();
 
-    Scene scene;
+    MeshFactory::CreateQuad(
+        renderer.GetMesh());
 
-    scene.CreateEntity("Player");
-    scene.CreateEntity("Enemy");
+    //----------------------------------------------------
+    // Enemy
+    //----------------------------------------------------
 
-    std::cout
-        << "Entidades: "
-        << scene.GetEntityCount()
-        << '\n';
+    m_Scene.CreateEntity("Enemy");
 
-    std::cout
-        << scene.GetEntity(0).GetName()
-        << '\n';
-
-    std::cout
-        << scene.GetEntity(1).GetName()
-        << '\n';
-
-    std::cout
-        << scene.GetEntity(0).GetID()
-        << '\n';
-
-    std::cout
-        << scene.GetEntity(1).GetID()
-        << '\n';
-
-    std::cout
-        << (scene.GetEntity(0).GetTransform().GetEntity() == &scene.GetEntity(0))
-        << '\n';
-
-    std::cout
-        << scene.GetEntity(0).GetTransform().GetEntity()
-        << '\n';
-
-    std::cout
-        << &scene.GetEntity(0)
-        << '\n';
-    
-    }
+    std::cout << "Application creada\n";
+}
 
 void Application::Run()
 {
@@ -121,92 +120,45 @@ void Application::Run()
     while (!m_Window.ShouldClose())
     {
         Time::Update(
-        static_cast<float>(glfwGetTime()));
+            static_cast<float>(glfwGetTime()));
 
         Input::Update();
 
-        if (Input::IsKeyPressed(Key::Space))
-        {
-            std::cout << "SPACE PRESSED\n";
-        }
+        Entity* cameraEntity =
+            m_Scene.FindEntityByName("MainCamera");
 
-        if (Input::IsKeyReleased(Key::Space))
-        {
-            std::cout << "SPACE RELEASED\n";
-        }
+        CameraComponent& camera =
+            cameraEntity->GetComponent<CameraComponent>();
 
         m_CameraController.Update(
-            m_Camera,
+            camera.GetCamera(),
             Time::GetDeltaTime());
 
-        m_Transform.Rotate(
-            0.0f,
-            0.0f,
-            90.0f * Time::GetDeltaTime());
-
-        /* static float accumulator = 0.0f;
-
-        accumulator += Time::GetDeltaTime();
-
-        if (accumulator >= 1.0f)
-        {
-            accumulator = 0.0f;
-
-            std::cout
-                << "FPS: "
-                << 1.0f / Time::GetDeltaTime()
-                << '\n';
-        } */
-        
         Renderer::BeginFrame();
 
         m_Shader.Bind();
 
         m_Shader.SetMatrix4(
-            "u_Model",
-            m_Transform.GetWorldMatrix());
-
-        m_Shader.SetMatrix4(
             "u_View",
-            m_Camera.GetViewMatrix());
+            camera.GetCamera().GetViewMatrix());
 
         m_Shader.SetMatrix4(
             "u_Projection",
-            m_Camera.GetProjectionMatrix());
+            camera.GetCamera().GetProjectionMatrix());
 
-        m_Mesh.Draw();
+        Renderer::DrawScene(
+            m_Scene,
+            m_Shader);
 
         GLenum error = glGetError();
 
         if (error != GL_NO_ERROR)
         {
-            std::cout << "OpenGL Error: " << error << '\n';
+            std::cout
+                << "OpenGL Error: "
+                << error
+                << '\n';
         }
-
-        /* if (Input::IsKeyPressed(Key::Space))
-        {
-            std::cout << "SPACE\n";
-        }
-
-        if (Input::IsKeyPressed(Key::W))
-        {
-            std::cout << "W\n";
-        }
-
-        if (Input::IsKeyPressed(Key::A))
-        {
-            std::cout << "A\n";
-        }
-
-        if (Input::IsKeyPressed(Key::S))
-        {
-            std::cout << "S\n";
-        }
-
-        if (Input::IsKeyPressed(Key::D))
-        {
-            std::cout << "D\n";
-        } */
 
         if (Input::IsKeyPressed(Key::Escape))
         {

@@ -6,10 +6,11 @@ namespace AtlasEngine
 Entity::Entity(
     EntityID id,
     const std::string& name)
-    : m_ID(id),
-      m_Name(name)
+    :
+    m_ID(id),
+    m_Name(name)
 {
-    m_Transform.SetEntity(this);
+    AddComponent<Transform>();
 }
 
 const std::string& Entity::GetName() const
@@ -25,12 +26,12 @@ void Entity::SetName(
 
 Transform& Entity::GetTransform()
 {
-    return m_Transform;
+    return GetComponent<Transform>();
 }
 
 const Transform& Entity::GetTransform() const
 {
-    return m_Transform;
+    return GetComponent<Transform>();
 }
 
 EntityID Entity::GetID() const

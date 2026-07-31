@@ -5,8 +5,8 @@
 #include "AtlasEngine/Renderer/Vertex.h"
 #include "AtlasEngine/Renderer/Mesh.h"
 #include "AtlasEngine/Math/Transform.h"
-#include "AtlasEngine/Renderer/Camera.h"
 #include "AtlasEngine/Controllers/CameraController.h"
+#include "AtlasEngine/Scene/Scene.h"
 
 namespace AtlasEngine
 {
@@ -26,8 +26,9 @@ private:
     Shader m_Shader;
     Mesh m_Mesh;
     Transform m_Transform;
-    Camera m_Camera;
     CameraController m_CameraController;
+    Scene m_Scene;
+    
 };
 
 }

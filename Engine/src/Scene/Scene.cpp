@@ -34,4 +34,37 @@ const Entity& Scene::GetEntity(
     return *m_Entities[index];
 }
 
+const std::vector<std::unique_ptr<Entity>>& Scene::GetEntities() const
+{
+    return m_Entities;
+}
+
+Entity* Scene::FindEntityByName(
+    const std::string& name)
+{
+    for (auto& entity : m_Entities)
+    {
+        if (entity->GetName() == name)
+        {
+            return entity.get();
+        }
+    }
+
+    return nullptr;
+}
+
+const Entity* Scene::FindEntityByName(
+    const std::string& name) const
+{
+    for (const auto& entity : m_Entities)
+    {
+        if (entity->GetName() == name)
+        {
+            return entity.get();
+        }
+    }
+
+    return nullptr;
+}
+
 } // namespace AtlasEngine

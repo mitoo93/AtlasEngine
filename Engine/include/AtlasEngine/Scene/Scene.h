@@ -23,10 +23,19 @@ public:
     const Entity& GetEntity(
         std::size_t index) const;
 
+    const std::vector<std::unique_ptr<Entity>>& GetEntities() const;
+
+    Entity* FindEntityByName(
+        const std::string& name);
+
+    const Entity* FindEntityByName(
+        const std::string& name) const;
+
 private:
 
     EntityID m_NextEntityID = 1;
     std::vector<std::unique_ptr<Entity>> m_Entities;
+    
 };
 
 } // namespace AtlasEngine
