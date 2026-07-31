@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "AtlasEngine/Math/Transform.h"
 
 namespace AtlasEngine
@@ -37,7 +39,36 @@ const Vector3& Transform::GetScale() const
     return m_Scale;
 }
 
-Matrix4 Transform::GetMatrix() const
+Transform* Transform::GetParent() const
+{
+    return m_Parent;
+}
+
+void Transform::SetParent(Transform* parent)
+{
+    if (m_Parent)
+    {
+        auto it =
+            std::find(
+                m_Parent->m_Children.begin(),
+                m_Parent->m_Children.end(),
+                this);
+
+        if (it != m_Parent->m_Children.end())
+        {
+            m_Parent->m_Children.erase(it);
+        }
+    }
+
+    m_Parent = parent;
+
+    if (m_Parent)
+    {
+        m_Parent->m_Children.push_back(this);
+    }
+}
+
+Matrix4 Transform::GetLocalMatrix() const
 {
     return
     Matrix4::Translate(
@@ -66,6 +97,29 @@ Matrix4 Transform::GetMatrix() const
         m_Scale.x,
         m_Scale.y,
         m_Scale.z);
+}
+
+const std::vector<Transform*>& Transform::GetChildren() const
+{
+    return m_Children;
+}
+
+std::size_t Transform::GetChildCount() const
+{
+    return m_Children.size();
+}
+
+Matrix4 Transform::GetWorldMatrix() const
+{
+    if (m_Parent)
+    {
+        return
+            m_Parent->GetWorldMatrix()
+            *
+            GetLocalMatrix();
+    }
+
+    return GetLocalMatrix();
 }
 
 void Transform::Translate(float x, float y, float z)

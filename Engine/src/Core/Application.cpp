@@ -73,6 +73,37 @@ Application::Application()
         0.0f
     });
 
+    Transform player;
+    Transform weapon;
+
+    player.SetPosition(
+    {
+        10.0f,
+        0.0f,
+        0.0f
+    });
+
+    weapon.SetPosition(
+    {
+        2.0f,
+        0.0f,
+        0.0f
+    });
+
+    weapon.SetParent(&player);
+
+    Matrix4 world =
+        weapon.GetWorldMatrix();
+
+    std::cout
+        << "Weapon World Position: "
+        << world.GetTranslationX()
+        << ", "
+        << world.GetTranslationY()
+        << ", "
+        << world.GetTranslationZ()
+        << '\n';
+
     std::cout << "Application creada\n";
 }
 
@@ -126,7 +157,7 @@ void Application::Run()
 
         m_Shader.SetMatrix4(
             "u_Model",
-            m_Transform.GetMatrix());
+            m_Transform.GetWorldMatrix());
 
         m_Shader.SetMatrix4(
             "u_View",

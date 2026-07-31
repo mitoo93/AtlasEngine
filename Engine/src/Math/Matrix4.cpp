@@ -156,4 +156,19 @@ Matrix4 Matrix4::Perspective(
     return matrix;
 }
 
+float Matrix4::GetTranslationX() const
+{
+    return m_Values[12];
+}
+
+float Matrix4::GetTranslationY() const
+{
+    return m_Values[13];
+}
+
+float Matrix4::GetTranslationZ() const
+{
+    return m_Values[14];
+}
+
 }

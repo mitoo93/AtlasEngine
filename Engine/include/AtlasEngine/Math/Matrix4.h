@@ -9,6 +9,10 @@ public:
 
     Matrix4();
 
+    float GetTranslationX() const;
+    float GetTranslationY() const;
+    float GetTranslationZ() const;
+
     static Matrix4 Identity();
 
     Matrix4 operator*(const Matrix4& other) const;
