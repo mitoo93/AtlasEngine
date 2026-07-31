@@ -21,6 +21,10 @@ add_library(Engine STATIC
     src/Math/Transform.cpp
 
     src/Controllers/CameraController.cpp
+
+    src/Scene/Entity.cpp
+    src/Scene/Scene.cpp
+    src/Scene/Component.cpp
     
 )
 

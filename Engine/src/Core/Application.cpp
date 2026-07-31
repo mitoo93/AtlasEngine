@@ -9,6 +9,7 @@
 #include "AtlasEngine/Renderer/MeshFactory.h"
 #include "AtlasEngine/Core/Time.h"
 #include "AtlasEngine/Core/Input.h"
+#include "AtlasEngine/Scene/Scene.h"
 
 #include <iostream>
 
@@ -73,39 +74,45 @@ Application::Application()
         0.0f
     });
 
-    Transform player;
-    Transform weapon;
+    Scene scene;
 
-    player.SetPosition(
-    {
-        10.0f,
-        0.0f,
-        0.0f
-    });
-
-    weapon.SetPosition(
-    {
-        2.0f,
-        0.0f,
-        0.0f
-    });
-
-    weapon.SetParent(&player);
-
-    Matrix4 world =
-        weapon.GetWorldMatrix();
+    scene.CreateEntity("Player");
+    scene.CreateEntity("Enemy");
 
     std::cout
-        << "Weapon World Position: "
-        << world.GetTranslationX()
-        << ", "
-        << world.GetTranslationY()
-        << ", "
-        << world.GetTranslationZ()
+        << "Entidades: "
+        << scene.GetEntityCount()
         << '\n';
 
-    std::cout << "Application creada\n";
-}
+    std::cout
+        << scene.GetEntity(0).GetName()
+        << '\n';
+
+    std::cout
+        << scene.GetEntity(1).GetName()
+        << '\n';
+
+    std::cout
+        << scene.GetEntity(0).GetID()
+        << '\n';
+
+    std::cout
+        << scene.GetEntity(1).GetID()
+        << '\n';
+
+    std::cout
+        << (scene.GetEntity(0).GetTransform().GetEntity() == &scene.GetEntity(0))
+        << '\n';
+
+    std::cout
+        << scene.GetEntity(0).GetTransform().GetEntity()
+        << '\n';
+
+    std::cout
+        << &scene.GetEntity(0)
+        << '\n';
+    
+    }
 
 void Application::Run()
 {

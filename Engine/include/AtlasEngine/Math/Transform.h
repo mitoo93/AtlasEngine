@@ -4,11 +4,12 @@
 
 #include "AtlasEngine/Math/Matrix4.h"
 #include "AtlasEngine/Math/Vector3.h"
+#include "AtlasEngine/Scene/Component.h"
 
 namespace AtlasEngine
 {
 
-class Transform
+class Transform : public Component
 {
 public:
 
