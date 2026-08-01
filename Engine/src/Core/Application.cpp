@@ -4,14 +4,16 @@
 #include "AtlasEngine/Renderer/Renderer.h"
 #include "AtlasEngine/Core/Application.h"
 #include "AtlasEngine/Core/Window.h"
-#include "AtlasEngine/Renderer/Shader.h"
 #include "AtlasEngine/Renderer/MeshFactory.h"
 #include "AtlasEngine/Core/Time.h"
 #include "AtlasEngine/Core/Input.h"
 
 #include "AtlasEngine/Scene/Scene.h"
 #include "AtlasEngine/Scene/MeshRendererComponent.h"
+#include "AtlasEngine/Scene/MaterialComponent.h"
 #include "AtlasEngine/Scene/CameraComponent.h"
+
+
 
 #include <iostream>
 
@@ -33,21 +35,6 @@ Application::Application()
     m_Scene.AddSystem<RenderSystem>();
 
     //----------------------------------------------------
-    // Shader
-    //----------------------------------------------------
-
-    if (!m_Shader.Load(
-        "Assets/Shaders/Basic.vert",
-        "Assets/Shaders/Basic.frag"))
-    {
-        std::cout << "Error creando el shader\n";
-    }
-    else
-    {
-        std::cout << "Shader creado\n";
-    }
-
-    //----------------------------------------------------
     // Camera Entity
     //----------------------------------------------------
 
@@ -58,9 +45,8 @@ Application::Application()
 
     CameraComponent& cameraComponent =
         camera.GetComponent<CameraComponent>();
-        
-    m_Scene.SetActiveCamera(
-        &cameraComponent);
+
+    cameraComponent.SetPrimary(true);
 
     cameraComponent.GetCamera().SetAspectRatio(
         props.Width / (float)props.Height);
@@ -104,8 +90,24 @@ Application::Application()
 
     player.AddComponent<MeshRendererComponent>();
 
+    player.AddComponent<MaterialComponent>();
+
     MeshRendererComponent& renderer =
         player.GetComponent<MeshRendererComponent>();
+
+    MaterialComponent& material =
+        player.GetComponent<MaterialComponent>();
+
+    if (!material.GetShader().Load(
+        "Assets/Shaders/Basic.vert",
+        "Assets/Shaders/Basic.frag"))
+    {
+        std::cout << "Error creando el shader\n";
+    }
+    else
+    {
+        std::cout << "Shader creado\n";
+    }
 
     MeshFactory::CreateQuad(
         renderer.GetMesh());
@@ -130,27 +132,21 @@ void Application::Run()
 
         Input::Update();
 
-        CameraComponent& camera =
-            *m_Scene.GetActiveCamera();
+        CameraComponent* camera =
+            m_Scene.FindPrimaryCamera();
+
+        if (!camera)
+        {
+            continue;
+        }
 
         m_CameraController.Update(
-            camera.GetCamera(),
+            camera->GetCamera(),
             Time::GetDeltaTime());
 
         Renderer::BeginFrame();
 
-        m_Shader.Bind();
-
-        m_Shader.SetMatrix4(
-            "u_View",
-            camera.GetCamera().GetViewMatrix());
-
-        m_Shader.SetMatrix4(
-            "u_Projection",
-            camera.GetCamera().GetProjectionMatrix());
-
-        m_Scene.Update(
-            m_Shader);
+        m_Scene.Update();
 
         GLenum error = glGetError();
 

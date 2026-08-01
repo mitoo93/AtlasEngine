@@ -67,31 +67,33 @@ const Entity* Scene::FindEntityByName(
     return nullptr;
 }
 
-void Scene::Update(
-    Shader& shader)
+void Scene::Update()
 {
     for (auto& system : m_Systems)
     {
-        system->Update(
-            *this,
-            shader);
+        system->Update(*this);
     }
 }
 
-void Scene::SetActiveCamera(
-    CameraComponent* camera)
+CameraComponent* Scene::FindPrimaryCamera()
 {
-    m_ActiveCamera = camera;
-}
+    for (auto& entity : m_Entities)
+    {
+        if (!entity->HasComponent<CameraComponent>())
+        {
+            continue;
+        }
 
-CameraComponent* Scene::GetActiveCamera()
-{
-    return m_ActiveCamera;
-}
+        CameraComponent& camera =
+            entity->GetComponent<CameraComponent>();
 
-const CameraComponent* Scene::GetActiveCamera() const
-{
-    return m_ActiveCamera;
+        if (camera.IsPrimary())
+        {
+            return &camera;
+        }
+    }
+
+    return nullptr;
 }
 
 } // namespace AtlasEngine

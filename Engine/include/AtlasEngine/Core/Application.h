@@ -24,7 +24,6 @@ public:
 private:
 
     Window m_Window;
-    Shader m_Shader;
     Mesh m_Mesh;
     Transform m_Transform;
     CameraController m_CameraController;

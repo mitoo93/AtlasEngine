@@ -12,8 +12,7 @@ class RenderSystem : public System
 public:
 
     void Update(
-        Scene& scene,
-        Shader& shader) override;
+        Scene& scene) override;
 };
 
 }

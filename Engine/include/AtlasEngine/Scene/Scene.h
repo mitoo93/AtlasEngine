@@ -70,22 +70,15 @@ public:
             "System not found");
     }
 
-    void Update(
-        Shader& shader);
+    void Update();
 
-    void SetActiveCamera(
-        CameraComponent* camera);
-
-    CameraComponent* GetActiveCamera();
-
-    const CameraComponent* GetActiveCamera() const;
+    CameraComponent* FindPrimaryCamera();
 
 private:
 
     EntityID m_NextEntityID = 1;
     std::vector<std::unique_ptr<Entity>> m_Entities;
     std::vector<std::unique_ptr<System>> m_Systems;
-    CameraComponent* m_ActiveCamera = nullptr;
     
 };
 
