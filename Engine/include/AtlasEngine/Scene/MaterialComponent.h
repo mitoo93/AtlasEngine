@@ -1,28 +1,34 @@
 #pragma once
 
 #include "AtlasEngine/Scene/Component.h"
-#include "AtlasEngine/Renderer/Shader.h"
 
 namespace AtlasEngine
 {
+
+class Material;
 
 class MaterialComponent : public Component
 {
 public:
 
-    Shader& GetShader()
+    void SetMaterial(Material* material)
     {
-        return m_Shader;
+        m_Material = material;
     }
 
-    const Shader& GetShader() const
+    Material* GetMaterial()
     {
-        return m_Shader;
+        return m_Material;
+    }
+
+    const Material* GetMaterial() const
+    {
+        return m_Material;
     }
 
 private:
 
-    Shader m_Shader;
+    Material* m_Material = nullptr;
 };
 
 }

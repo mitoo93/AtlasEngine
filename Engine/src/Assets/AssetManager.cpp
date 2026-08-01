@@ -1,0 +1,93 @@
+#include "AtlasEngine/Assets/AssetManager.h"
+
+#include "AtlasEngine/Renderer/Shader.h"
+#include "AtlasEngine/Renderer/Material.h"
+
+namespace AtlasEngine
+{
+
+std::unordered_map<
+    std::string,
+    std::unique_ptr<Shader>>
+AssetManager::s_Shaders;
+
+std::unordered_map<
+    std::string,
+    std::unique_ptr<Material>>
+AssetManager::s_Materials;
+
+bool AssetManager::LoadShader(
+    const std::string& name,
+    const std::string& vertexPath,
+    const std::string& fragmentPath)
+{
+    if (s_Shaders.find(name) != s_Shaders.end())
+    {
+        return true;
+    }
+
+    auto shader =
+        std::make_unique<Shader>();
+
+    if (!shader->Load(
+        vertexPath,
+        fragmentPath))
+    {
+        return false;
+    }
+
+    s_Shaders[name] =
+        std::move(shader);
+
+    return true;
+}
+
+Shader* AssetManager::GetShader(
+    const std::string& name)
+{
+    auto it =
+        s_Shaders.find(name);
+
+    if (it == s_Shaders.end())
+    {
+        return nullptr;
+    }
+
+    return it->second.get();
+}
+
+bool AssetManager::LoadMaterial(
+    const std::string& name,
+    Shader* shader)
+{
+    if (s_Materials.find(name) != s_Materials.end())
+    {
+        return true;
+    }
+
+    auto material =
+        std::make_unique<Material>();
+
+    material->SetShader(shader);
+
+    s_Materials[name] =
+        std::move(material);
+
+    return true;
+}
+
+Material* AssetManager::GetMaterial(
+    const std::string& name)
+{
+    auto it =
+        s_Materials.find(name);
+
+    if (it == s_Materials.end())
+    {
+        return nullptr;
+    }
+
+    return it->second.get();
+}
+
+}

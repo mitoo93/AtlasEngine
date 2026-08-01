@@ -1,9 +1,11 @@
 #include "AtlasEngine/Systems/RenderSystem.h"
 
 #include "AtlasEngine/Renderer/Shader.h"
+#include "AtlasEngine/Renderer/Material.h"
 #include "AtlasEngine/Scene/Scene.h"
 #include "AtlasEngine/Scene/MeshRendererComponent.h"
 #include "AtlasEngine/Scene/MaterialComponent.h"
+
 
 namespace AtlasEngine
 {
@@ -31,31 +33,44 @@ void RenderSystem::Update(
         MeshRendererComponent& meshRenderer =
             entity->GetComponent<MeshRendererComponent>();
 
-        MaterialComponent& material =
+        MaterialComponent& materialComponent =
             entity->GetComponent<MaterialComponent>();
 
-        Shader& entityShader =
-            material.GetShader();
+        Material* material =
+            materialComponent.GetMaterial();
 
-        entityShader.Bind();
+        if (!material)
+        {
+            continue;
+        }
 
-        entityShader.SetMatrix4(
+        Shader* entityShader =
+            material->GetShader();
+
+        if (!entityShader)
+        {
+            continue;
+        }
+
+        entityShader->Bind();
+
+        entityShader->SetMatrix4(
             "u_Model",
             entity->GetTransform().GetWorldMatrix());
 
-        entityShader.SetMatrix4(
+        entityShader->SetMatrix4(
             "u_View",
             camera->GetCamera().GetViewMatrix());
 
-        entityShader.SetMatrix4(
+        entityShader->SetMatrix4(
             "u_Projection",
             camera->GetCamera().GetProjectionMatrix());
 
-        entityShader.SetMatrix4(
+        entityShader->SetMatrix4(
             "u_View",
             camera->GetCamera().GetViewMatrix());
 
-        entityShader.SetMatrix4(
+        entityShader->SetMatrix4(
             "u_Projection",
             camera->GetCamera().GetProjectionMatrix());
 

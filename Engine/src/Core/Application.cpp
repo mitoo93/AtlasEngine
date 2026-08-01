@@ -13,6 +13,8 @@
 #include "AtlasEngine/Scene/MaterialComponent.h"
 #include "AtlasEngine/Scene/CameraComponent.h"
 
+#include "AtlasEngine/Assets/AssetManager.h"
+
 
 
 #include <iostream>
@@ -95,19 +97,22 @@ Application::Application()
     MeshRendererComponent& renderer =
         player.GetComponent<MeshRendererComponent>();
 
+    
+
+    AssetManager::LoadShader(
+        "Basic",
+        "Assets/Shaders/Basic.vert",
+        "Assets/Shaders/Basic.frag");
+
+    AssetManager::LoadMaterial(
+        "Default",
+        AssetManager::GetShader("Basic"));
+
     MaterialComponent& material =
         player.GetComponent<MaterialComponent>();
 
-    if (!material.GetShader().Load(
-        "Assets/Shaders/Basic.vert",
-        "Assets/Shaders/Basic.frag"))
-    {
-        std::cout << "Error creando el shader\n";
-    }
-    else
-    {
-        std::cout << "Shader creado\n";
-    }
+    material.SetMaterial(
+        AssetManager::GetMaterial("Default"));
 
     MeshFactory::CreateQuad(
         renderer.GetMesh());
