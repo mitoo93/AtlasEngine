@@ -7,6 +7,7 @@
 #include "AtlasEngine/Math/Transform.h"
 #include "AtlasEngine/Controllers/CameraController.h"
 #include "AtlasEngine/Scene/Scene.h"
+#include "AtlasEngine/Systems/RenderSystem.h"
 
 namespace AtlasEngine
 {

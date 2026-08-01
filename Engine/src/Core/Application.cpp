@@ -29,6 +29,9 @@ Application::Application()
     Input::SetNativeWindow(
         m_Window.GetNativeWindow());
 
+    
+    m_Scene.AddSystem<RenderSystem>();
+
     //----------------------------------------------------
     // Shader
     //----------------------------------------------------
@@ -55,6 +58,9 @@ Application::Application()
 
     CameraComponent& cameraComponent =
         camera.GetComponent<CameraComponent>();
+        
+    m_Scene.SetActiveCamera(
+        &cameraComponent);
 
     cameraComponent.GetCamera().SetAspectRatio(
         props.Width / (float)props.Height);
@@ -124,11 +130,8 @@ void Application::Run()
 
         Input::Update();
 
-        Entity* cameraEntity =
-            m_Scene.FindEntityByName("MainCamera");
-
         CameraComponent& camera =
-            cameraEntity->GetComponent<CameraComponent>();
+            *m_Scene.GetActiveCamera();
 
         m_CameraController.Update(
             camera.GetCamera(),
@@ -146,8 +149,7 @@ void Application::Run()
             "u_Projection",
             camera.GetCamera().GetProjectionMatrix());
 
-        Renderer::DrawScene(
-            m_Scene,
+        m_Scene.Update(
             m_Shader);
 
         GLenum error = glGetError();

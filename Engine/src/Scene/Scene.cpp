@@ -67,4 +67,31 @@ const Entity* Scene::FindEntityByName(
     return nullptr;
 }
 
+void Scene::Update(
+    Shader& shader)
+{
+    for (auto& system : m_Systems)
+    {
+        system->Update(
+            *this,
+            shader);
+    }
+}
+
+void Scene::SetActiveCamera(
+    CameraComponent* camera)
+{
+    m_ActiveCamera = camera;
+}
+
+CameraComponent* Scene::GetActiveCamera()
+{
+    return m_ActiveCamera;
+}
+
+const CameraComponent* Scene::GetActiveCamera() const
+{
+    return m_ActiveCamera;
+}
+
 } // namespace AtlasEngine

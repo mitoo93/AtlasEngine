@@ -25,6 +25,8 @@ add_library(Engine STATIC
     src/Scene/Entity.cpp
     src/Scene/Scene.cpp
     src/Scene/Component.cpp
+
+    src/Systems/RenderSystem.cpp
     
 )
 
