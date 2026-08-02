@@ -15,6 +15,8 @@
 
 #include "AtlasEngine/Assets/AssetManager.h"
 
+#include "AtlasEngine/Serialization/SceneSerializer.h"
+
 #include <iostream>
 
 namespace AtlasEngine
@@ -36,7 +38,7 @@ Application::Application()
     //----------------------------------------------------
     // Recursos
     //----------------------------------------------------
-
+    
     AssetManager::LoadShader(
         "Basic",
         "Assets/Shaders/Basic.vert",
@@ -50,82 +52,107 @@ Application::Application()
         "Quad",
         MeshFactory::CreateQuad());
 
-    //----------------------------------------------------
-    // Camera Entity
-    //----------------------------------------------------
 
-    Entity& camera =
-        m_Scene.CreateEntity("MainCamera");
+    if (SceneSerializer::Load(
+        m_Scene,
+        "Assets/Scenes/Test.scene"))
+    {
+        std::cout
+            << "Escena cargada\n";
+    }
+    else
+    {
+        //----------------------------------------------------
+        // Camera Entity
+        //----------------------------------------------------
 
-    camera.AddComponent<CameraComponent>();
+        Entity& camera =
+            m_Scene.CreateEntity("MainCamera");
+        
+        camera.AddComponent<CameraComponent>();
 
-    CameraComponent& cameraComponent =
-        camera.GetComponent<CameraComponent>();
+        CameraComponent& cameraComponent =
+            camera.GetComponent<CameraComponent>();
 
-    cameraComponent.SetPrimary(true);
+        cameraComponent.SetPrimary(true);
 
-    cameraComponent.GetCamera().SetAspectRatio(
-        props.Width / (float)props.Height);
+        cameraComponent.GetCamera().SetAspectRatio(
+            props.Width / (float)props.Height);
 
-    cameraComponent.GetCamera().SetPosition({
-        0.0f,
-        0.0f,
-        0.0f
-    });
+        cameraComponent.GetCamera().SetPosition({
+            0.0f,
+            0.0f,
+            0.0f
+        });
 
-    cameraComponent.GetCamera().SetRotation({
-        0.0f,
-        0.0f,
-        0.0f
-    });
+        cameraComponent.GetCamera().SetRotation({
+            0.0f,
+            0.0f,
+            0.0f
+        });
 
-    //----------------------------------------------------
-    // Player
-    //----------------------------------------------------
+        //----------------------------------------------------
+        // Player
+        //----------------------------------------------------
 
-    Entity& player =
-        m_Scene.CreateEntity("Player");
+        Entity& player =
+            m_Scene.CreateEntity("Player");
 
-    player.GetTransform().SetPosition({
-        0.0f,
-        0.0f,
-        -2.0f
-    });
+        player.GetTransform().SetPosition({
+            0.0f,
+            0.0f,
+            -2.0f
+        });
 
-    player.GetTransform().SetScale({
-        0.5f,
-        0.5f,
-        1.0f
-    });
+        player.GetTransform().SetScale({
+            0.5f,
+            0.5f,
+            1.0f
+        });
 
-    player.GetTransform().SetRotation({
-        30.0f,
-        30.0f,
-        30.0f
-    });
+        player.GetTransform().SetRotation({
+            30.0f,
+            30.0f,
+            30.0f
+        });
 
-    player.AddComponent<MeshRendererComponent>();
-    player.AddComponent<MaterialComponent>();
+        player.AddComponent<MeshRendererComponent>();
+        player.AddComponent<MaterialComponent>();
 
-    MeshRendererComponent& renderer =
-        player.GetComponent<MeshRendererComponent>();
+        MeshRendererComponent& renderer =
+            player.GetComponent<MeshRendererComponent>();
 
-    MaterialComponent& material =
-        player.GetComponent<MaterialComponent>();
+        MaterialComponent& material =
+            player.GetComponent<MaterialComponent>();
 
-    renderer.SetMesh(
-        AssetManager::GetMesh("Quad"));
+        renderer.SetMesh(
+            AssetManager::GetMesh("Quad"));
 
-    material.SetMaterial(
-        AssetManager::GetMaterial("Default"));
+        material.SetMaterial(
+            AssetManager::GetMaterial("Default"));
 
-    //----------------------------------------------------
-    // Enemy
-    //----------------------------------------------------
+        //----------------------------------------------------
+        // Enemy
+        //----------------------------------------------------
 
-    m_Scene.CreateEntity("Enemy");
+        m_Scene.CreateEntity("Enemy");
+
+        if (SceneSerializer::Save(
+                m_Scene,
+                "Assets/Scenes/Test.scene"))
+        {
+            std::cout << "Escena creada y guardada\n";
+        }
+        else
+        {
+            std::cout << "ERROR al guardar la escena\n";
+        }
+
+    }
 
     std::cout << "Application creada\n";
+
+    
 }
 
 void Application::Run()
@@ -144,6 +171,7 @@ void Application::Run()
 
         if (!camera)
         {
+            m_Window.Update();
             continue;
         }
 

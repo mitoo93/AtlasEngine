@@ -54,4 +54,15 @@ void Mesh::Draw() const
         nullptr);
 }
 
+void Mesh::SetName(
+    const std::string& name)
+{
+    m_Name = name;
+}
+
+const std::string& Mesh::GetName() const
+{
+    return m_Name;
+}
+
 }

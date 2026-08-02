@@ -5,6 +5,7 @@
 #include "AtlasEngine/Renderer/IndexBuffer.h"
 #include "AtlasEngine/Renderer/BufferLayout.h"
 #include <vector>
+#include <string>
 #include "AtlasEngine/Renderer/Vertex.h"
 
 namespace AtlasEngine
@@ -26,11 +27,17 @@ public:
 
     void Draw() const;
 
+    void SetName(
+        const std::string& name);
+
+    const std::string& GetName() const;
+
 private:
 
     VertexArray m_VertexArray;
     VertexBuffer m_VertexBuffer;
     IndexBuffer m_IndexBuffer;
+    std::string m_Name;
 };
 
 }

@@ -74,6 +74,8 @@ bool AssetManager::LoadMaterial(
     auto material =
         std::make_unique<Material>();
 
+    material->SetName(name);
+
     material->SetShader(shader);
 
     s_Materials[name] =
@@ -104,6 +106,8 @@ bool AssetManager::LoadMesh(
     {
         return true;
     }
+
+    mesh->SetName(name);
 
     s_Meshes[name] =
         std::move(mesh);

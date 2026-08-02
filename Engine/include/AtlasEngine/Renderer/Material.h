@@ -24,9 +24,21 @@ public:
         return m_Shader;
     }
 
+    void SetName(
+        const std::string& name)
+    {
+        m_Name = name;
+    }
+
+    const std::string& GetName() const
+    {
+        return m_Name;
+    }
+
 private:
 
     Shader* m_Shader = nullptr;
+    std::string m_Name;
 };
 
 }

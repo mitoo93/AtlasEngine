@@ -29,6 +29,8 @@ add_library(Engine STATIC
     src/Systems/RenderSystem.cpp
 
     src/Assets/AssetManager.cpp
+
+    src/Serialization/SceneSerializer.cpp
     
 )
 
