@@ -1,40 +1,34 @@
 #pragma once
 
 #include "AtlasEngine/Scene/Component.h"
-#include "AtlasEngine/Renderer/Mesh.h"
-#include "AtlasEngine/Renderer/Shader.h"
 
 namespace AtlasEngine
 {
+
+class Mesh;
 
 class MeshRendererComponent : public Component
 {
 public:
 
-    Mesh& GetMesh()
+    void SetMesh(Mesh* mesh)
+    {
+        m_Mesh = mesh;
+    }
+
+    Mesh* GetMesh()
     {
         return m_Mesh;
     }
 
-    Shader& GetShader()
-    {
-        return m_Shader;
-    }
-
-    const Mesh& GetMesh() const
+    const Mesh* GetMesh() const
     {
         return m_Mesh;
-    }
-
-    const Shader& GetShader() const
-    {
-        return m_Shader;
     }
 
 private:
 
-    Mesh m_Mesh;
-    Shader m_Shader;
+    Mesh* m_Mesh = nullptr;
 };
 
 }

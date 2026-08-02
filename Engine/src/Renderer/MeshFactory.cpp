@@ -1,12 +1,19 @@
 #include "AtlasEngine/Renderer/MeshFactory.h"
+
+#include "AtlasEngine/Renderer/Mesh.h"
 #include "AtlasEngine/Renderer/Vertex.h"
+
 #include <vector>
+#include <memory>
 
 namespace AtlasEngine
 {
 
-void MeshFactory::CreateQuad(Mesh& mesh)
+std::unique_ptr<Mesh> MeshFactory::CreateQuad()
 {
+    auto mesh =
+        std::make_unique<Mesh>();
+
     std::vector<Vertex> vertices
     {
         { { -0.5f, -0.5f, 0.0f } },
@@ -21,10 +28,12 @@ void MeshFactory::CreateQuad(Mesh& mesh)
         2, 3, 0
     };
 
-    mesh.Create(
+    mesh->Create(
         vertices,
         indices,
         Vertex::GetLayout());
+
+    return mesh;
 }
 
 }

@@ -9,6 +9,8 @@ namespace AtlasEngine
 
 class Shader;
 
+class Mesh;
+
 class Material;
 
 class AssetManager
@@ -30,6 +32,13 @@ public:
     static Material* GetMaterial(
         const std::string& name);
 
+    static bool LoadMesh(
+        const std::string& name,
+        std::unique_ptr<Mesh> mesh);
+
+    static Mesh* GetMesh(
+        const std::string& name);
+
 private:
 
     static std::unordered_map<
@@ -39,6 +48,10 @@ private:
     static std::unordered_map<
         std::string,
         std::unique_ptr<Material>> s_Materials;
-};
+
+    static std::unordered_map<
+        std::string,
+        std::unique_ptr<Mesh>> s_Meshes;
+    };
 
 }

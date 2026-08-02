@@ -1,15 +1,17 @@
 #pragma once
 
-#include "AtlasEngine/Renderer/Mesh.h"
+#include <memory>
 
 namespace AtlasEngine
 {
+
+class Mesh;
 
 class MeshFactory
 {
 public:
 
-    static void CreateQuad(Mesh& mesh);
+    static std::unique_ptr<Mesh> CreateQuad();
 };
 
 }

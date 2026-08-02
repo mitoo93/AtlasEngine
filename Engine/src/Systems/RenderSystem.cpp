@@ -5,6 +5,7 @@
 #include "AtlasEngine/Scene/Scene.h"
 #include "AtlasEngine/Scene/MeshRendererComponent.h"
 #include "AtlasEngine/Scene/MaterialComponent.h"
+#include "AtlasEngine/Renderer/Mesh.h"
 
 
 namespace AtlasEngine
@@ -66,15 +67,15 @@ void RenderSystem::Update(
             "u_Projection",
             camera->GetCamera().GetProjectionMatrix());
 
-        entityShader->SetMatrix4(
-            "u_View",
-            camera->GetCamera().GetViewMatrix());
+        Mesh* mesh =
+            meshRenderer.GetMesh();
 
-        entityShader->SetMatrix4(
-            "u_Projection",
-            camera->GetCamera().GetProjectionMatrix());
+        if (!mesh)
+        {
+            continue;
+        }
 
-        meshRenderer.GetMesh().Draw();
+        mesh->Draw();
 
     }
 }

@@ -15,8 +15,6 @@
 
 #include "AtlasEngine/Assets/AssetManager.h"
 
-
-
 #include <iostream>
 
 namespace AtlasEngine
@@ -33,8 +31,24 @@ Application::Application()
     Input::SetNativeWindow(
         m_Window.GetNativeWindow());
 
-    
     m_Scene.AddSystem<RenderSystem>();
+
+    //----------------------------------------------------
+    // Recursos
+    //----------------------------------------------------
+
+    AssetManager::LoadShader(
+        "Basic",
+        "Assets/Shaders/Basic.vert",
+        "Assets/Shaders/Basic.frag");
+
+    AssetManager::LoadMaterial(
+        "Default",
+        AssetManager::GetShader("Basic"));
+
+    AssetManager::LoadMesh(
+        "Quad",
+        MeshFactory::CreateQuad());
 
     //----------------------------------------------------
     // Camera Entity
@@ -91,31 +105,19 @@ Application::Application()
     });
 
     player.AddComponent<MeshRendererComponent>();
-
     player.AddComponent<MaterialComponent>();
 
     MeshRendererComponent& renderer =
         player.GetComponent<MeshRendererComponent>();
 
-    
-
-    AssetManager::LoadShader(
-        "Basic",
-        "Assets/Shaders/Basic.vert",
-        "Assets/Shaders/Basic.frag");
-
-    AssetManager::LoadMaterial(
-        "Default",
-        AssetManager::GetShader("Basic"));
-
     MaterialComponent& material =
         player.GetComponent<MaterialComponent>();
 
+    renderer.SetMesh(
+        AssetManager::GetMesh("Quad"));
+
     material.SetMaterial(
         AssetManager::GetMaterial("Default"));
-
-    MeshFactory::CreateQuad(
-        renderer.GetMesh());
 
     //----------------------------------------------------
     // Enemy
