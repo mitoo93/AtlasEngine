@@ -1,6 +1,9 @@
 #pragma once
 
 #include <string>
+#include <functional>
+
+#include "AtlasEngine/Events/Event.h"
 
 // Forward declaration.
 // Evitamos incluir GLFW en el header.
@@ -44,6 +47,22 @@ public:
 
     void SetCursorEnabled(bool enabled);
 
+    using EventCallbackFn =
+        std::function<void(Event&)>;
+
+    void SetEventCallback(
+        const EventCallbackFn& callback);
+
+    unsigned int GetWidth() const
+    {
+        return m_Data.Properties.Width;
+    }
+
+    unsigned int GetHeight() const
+    {
+        return m_Data.Properties.Height;
+    }
+
 private:
 
     bool Init();
@@ -58,7 +77,10 @@ private:
     struct WindowData
     {
         WindowProperties Properties;
+
         GLFWwindow* Handle = nullptr;
+
+        EventCallbackFn EventCallback;
     };
 
     WindowData m_Data;

@@ -2,6 +2,7 @@
     #include <GLFW/glfw3.h>
 
     #include "AtlasEngine/Core/Window.h"
+    #include "AtlasEngine/Events/WindowEvent.h"
 
     #include <iostream>
 
@@ -66,6 +67,32 @@
             return false;
         }
 
+        glfwSetWindowUserPointer(
+            m_Data.Handle,
+            &m_Data);
+
+        glfwSetWindowSizeCallback(
+            m_Data.Handle,
+            [](GLFWwindow* window,
+            int width,
+            int height)
+            {
+                WindowData& data =
+                    *(WindowData*)glfwGetWindowUserPointer(window);
+
+                data.Properties.Width = width;
+                data.Properties.Height = height;
+
+                WindowResizeEvent event(
+                    width,
+                    height);
+
+                if (data.EventCallback)
+                {
+                    data.EventCallback(event);
+                }
+            });
+
         glfwMakeContextCurrent(m_Data.Handle);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -121,6 +148,12 @@
             enabled
                 ? GLFW_CURSOR_NORMAL
                 : GLFW_CURSOR_DISABLED);
+    }
+
+    void Window::SetEventCallback(
+        const EventCallbackFn& callback)
+    {
+        m_Data.EventCallback = callback;
     }
 
     } // namespace AtlasEngine

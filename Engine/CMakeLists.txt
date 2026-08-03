@@ -31,6 +31,10 @@ add_library(Engine STATIC
     src/Assets/AssetManager.cpp
 
     src/Serialization/SceneSerializer.cpp
+
+    src/Core/Layer.cpp
+    src/Core/LayerStack.cpp
+    src/Gameplay/GameLayer.cpp
     
 )
 

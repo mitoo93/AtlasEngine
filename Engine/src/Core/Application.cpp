@@ -1,30 +1,34 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "AtlasEngine/Renderer/Renderer.h"
 #include "AtlasEngine/Core/Application.h"
 #include "AtlasEngine/Core/Window.h"
-#include "AtlasEngine/Renderer/MeshFactory.h"
 #include "AtlasEngine/Core/Time.h"
 #include "AtlasEngine/Core/Input.h"
 
-#include "AtlasEngine/Scene/Scene.h"
-#include "AtlasEngine/Scene/MeshRendererComponent.h"
-#include "AtlasEngine/Scene/MaterialComponent.h"
-#include "AtlasEngine/Scene/CameraComponent.h"
+#include "AtlasEngine/Events/EventDispatcher.h"
+#include "AtlasEngine/Events/WindowEvent.h"
 
-#include "AtlasEngine/Assets/AssetManager.h"
-
-#include "AtlasEngine/Serialization/SceneSerializer.h"
+#include "AtlasEngine/Gameplay/GameLayer.h"
 
 #include <iostream>
 
 namespace AtlasEngine
 {
 
+Application* Application::s_Instance = nullptr;
+
 Application::Application()
 {
+    s_Instance = this;
+
     WindowProperties props;
+
+    m_Window.SetEventCallback(
+        [this](Event& event)
+        {
+            OnEvent(event);
+        });
 
     m_Window.Create(props);
 
@@ -33,122 +37,8 @@ Application::Application()
     Input::SetNativeWindow(
         m_Window.GetNativeWindow());
 
-    m_Scene.AddSystem<RenderSystem>();
-
-    //----------------------------------------------------
-    // Recursos
-    //----------------------------------------------------
-    
-    AssetManager::LoadShader(
-        "Basic",
-        "Assets/Shaders/Basic.vert",
-        "Assets/Shaders/Basic.frag");
-
-    AssetManager::LoadMaterial(
-        "Default",
-        AssetManager::GetShader("Basic"));
-
-    AssetManager::LoadMesh(
-        "Quad",
-        MeshFactory::CreateQuad());
-
-
-    if (SceneSerializer::Load(
-        m_Scene,
-        "Assets/Scenes/Test.scene"))
-    {
-        std::cout
-            << "Escena cargada\n";
-    }
-    else
-    {
-        //----------------------------------------------------
-        // Camera Entity
-        //----------------------------------------------------
-
-        Entity& camera =
-            m_Scene.CreateEntity("MainCamera");
-        
-        camera.AddComponent<CameraComponent>();
-
-        CameraComponent& cameraComponent =
-            camera.GetComponent<CameraComponent>();
-
-        cameraComponent.SetPrimary(true);
-
-        cameraComponent.GetCamera().SetAspectRatio(
-            props.Width / (float)props.Height);
-
-        cameraComponent.GetCamera().SetPosition({
-            0.0f,
-            0.0f,
-            0.0f
-        });
-
-        cameraComponent.GetCamera().SetRotation({
-            0.0f,
-            0.0f,
-            0.0f
-        });
-
-        //----------------------------------------------------
-        // Player
-        //----------------------------------------------------
-
-        Entity& player =
-            m_Scene.CreateEntity("Player");
-
-        player.GetTransform().SetPosition({
-            0.0f,
-            0.0f,
-            -2.0f
-        });
-
-        player.GetTransform().SetScale({
-            0.5f,
-            0.5f,
-            1.0f
-        });
-
-        player.GetTransform().SetRotation({
-            30.0f,
-            30.0f,
-            30.0f
-        });
-
-        player.AddComponent<MeshRendererComponent>();
-        player.AddComponent<MaterialComponent>();
-
-        MeshRendererComponent& renderer =
-            player.GetComponent<MeshRendererComponent>();
-
-        MaterialComponent& material =
-            player.GetComponent<MaterialComponent>();
-
-        renderer.SetMesh(
-            AssetManager::GetMesh("Quad"));
-
-        material.SetMaterial(
-            AssetManager::GetMaterial("Default"));
-
-        //----------------------------------------------------
-        // Enemy
-        //----------------------------------------------------
-
-        m_Scene.CreateEntity("Enemy");
-
-        if (SceneSerializer::Save(
-                m_Scene,
-                "Assets/Scenes/Test.scene"))
-        {
-            std::cout << "Escena creada y guardada\n";
-        }
-        else
-        {
-            std::cout << "ERROR al guardar la escena\n";
-        }
-
-    }
+   
+    PushLayer(new GameLayer());
 
     std::cout << "Application creada\n";
 
@@ -166,42 +56,81 @@ void Application::Run()
 
         Input::Update();
 
-        CameraComponent* camera =
-            m_Scene.FindPrimaryCamera();
-
-        if (!camera)
+        for (Layer* layer : m_LayerStack)
         {
-            m_Window.Update();
-            continue;
-        }
-
-        m_CameraController.Update(
-            camera->GetCamera(),
-            Time::GetDeltaTime());
-
-        Renderer::BeginFrame();
-
-        m_Scene.Update();
-
-        GLenum error = glGetError();
-
-        if (error != GL_NO_ERROR)
-        {
-            std::cout
-                << "OpenGL Error: "
-                << error
-                << '\n';
+            layer->OnUpdate(Time::GetDeltaTime());
         }
 
         if (Input::IsKeyPressed(Key::Escape))
+            break;
+
+        m_Window.Update();
+    }
+}
+
+void Application::OnEvent(Event& event)
+{
+    EventDispatcher dispatcher(event);
+
+    for (auto it = m_LayerStack.end();
+        it != m_LayerStack.begin();)
+    {
+        (*--it)->OnEvent(event);
+
+        if (event.Handled())
         {
             break;
         }
-
-        m_Window.Update();
-
-        Renderer::EndFrame();
     }
+
+    dispatcher.Dispatch<WindowResizeEvent>(
+        [this](WindowResizeEvent& e)
+        {
+            return OnWindowResize(e);
+        });
+
+    dispatcher.Dispatch<WindowCloseEvent>(
+        [this](WindowCloseEvent& e)
+        {
+            return OnWindowClose(e);
+        });
+}
+
+bool Application::OnWindowResize(WindowResizeEvent& event)
+{
+    /* std::cout
+        << "Resize: "
+        << event.GetWidth()
+        << " x "
+        << event.GetHeight()
+        << '\n'; */
+
+    return true;
+}
+
+bool Application::OnWindowClose(WindowCloseEvent&)
+{
+    std::cout
+        << "Window Close\n";
+
+    return true;
+}
+
+void Application::PushLayer(
+    Layer* layer)
+{
+    m_LayerStack.PushLayer(layer);
+}
+
+void Application::PushOverlay(
+    Layer* layer)
+{
+    m_LayerStack.PushOverlay(layer);
+}
+
+Application& Application::Get()
+{
+    return *s_Instance;
 }
 
 }
