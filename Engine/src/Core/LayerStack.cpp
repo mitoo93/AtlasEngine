@@ -12,6 +12,15 @@ LayerStack::LayerStack()
 
 LayerStack::~LayerStack()
 {
+    for (auto it = m_Layers.rbegin();
+         it != m_Layers.rend();
+         ++it)
+    {
+        (*it)->OnDetach();
+        delete *it;
+    }
+
+    m_Layers.clear();
 }
 
 void LayerStack::PushLayer(

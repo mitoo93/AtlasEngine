@@ -35,6 +35,8 @@ add_library(Engine STATIC
     src/Core/Layer.cpp
     src/Core/LayerStack.cpp
     src/Gameplay/GameLayer.cpp
+
+    src/Editor/EditorLayer.cpp
     
 )
 

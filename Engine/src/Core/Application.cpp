@@ -5,11 +5,10 @@
 #include "AtlasEngine/Core/Window.h"
 #include "AtlasEngine/Core/Time.h"
 #include "AtlasEngine/Core/Input.h"
+#include "AtlasEngine/Core/Layer.h"
 
 #include "AtlasEngine/Events/EventDispatcher.h"
 #include "AtlasEngine/Events/WindowEvent.h"
-
-#include "AtlasEngine/Gameplay/GameLayer.h"
 
 #include <iostream>
 
@@ -36,9 +35,6 @@ Application::Application()
 
     Input::SetNativeWindow(
         m_Window.GetNativeWindow());
-
-   
-    PushLayer(new GameLayer());
 
     std::cout << "Application creada\n";
 

@@ -1,12 +1,22 @@
 #include "AtlasEngine/Editor/EditorLayer.h"
 
-#include "AtlasEngine/Scene/Scene.h"
+#include <iostream>
 
 namespace AtlasEngine
 {
 
-void EditorLayer::OnImGuiRender(Scene&)
+void EditorLayer::OnAttach()
 {
+    std::cout << "EditorLayer Attach\n";
+}
+
+void EditorLayer::OnUpdate(float)
+{
+}
+
+void EditorLayer::OnDetach()
+{
+    std::cout << "EditorLayer Detach\n";
 }
 
 }

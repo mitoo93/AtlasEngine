@@ -1,15 +1,24 @@
 #pragma once
 
+#include "AtlasEngine/Core/Layer.h"
+
 namespace AtlasEngine
 {
 
-class Scene;
-
-class EditorLayer
+class EditorLayer : public Layer
 {
 public:
 
-    void OnImGuiRender(Scene& scene);
+    EditorLayer()
+        : Layer("EditorLayer")
+    {
+    }
+
+    void OnAttach() override;
+
+    void OnUpdate(float dt) override;
+
+    void OnDetach() override;
 };
 
 }
