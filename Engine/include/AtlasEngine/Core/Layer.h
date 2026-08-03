@@ -23,6 +23,8 @@ public:
 
     virtual void OnEvent(Event& event) {}
 
+    virtual void OnImGuiRender() {}
+
     const std::string& GetName() const;
 
 private:

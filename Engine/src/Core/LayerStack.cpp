@@ -2,6 +2,7 @@
 #include "AtlasEngine/Core/Layer.h"
 
 #include <algorithm>
+#include <iostream>
 
 namespace AtlasEngine
 {
@@ -35,11 +36,13 @@ void LayerStack::PushLayer(
     layer->OnAttach();
 }
 
-void LayerStack::PushOverlay(
-    Layer* overlay)
+void LayerStack::PushOverlay(Layer* overlay)
 {
-    m_Layers.emplace_back(
-        overlay);
+    std::cout << "LayerStack PushOverlay: "
+              << overlay->GetName()
+              << '\n';
+
+    m_Layers.emplace_back(overlay);
 
     overlay->OnAttach();
 }

@@ -11,6 +11,9 @@
 #include "AtlasEngine/Events/EventDispatcher.h"
 #include "AtlasEngine/Events/WindowEvent.h"
 
+#include "AtlasEngine/Gameplay/GameLayer.h"
+#include "AtlasEngine/Editor/EditorLayer.h"
+
 #include <iostream>
 
 namespace AtlasEngine
@@ -48,6 +51,26 @@ void Application::Run()
 {
     std::cout << "Engine ejecutandose\n";
 
+    GameLayer* game =
+        GetLayer<GameLayer>();
+
+    EditorLayer* editor =
+        GetLayer<EditorLayer>();
+
+    std::cout << "GameLayer: "
+            << (game ? "OK" : "NULL")
+            << '\n';
+
+    std::cout << "EditorLayer: "
+            << (editor ? "OK" : "NULL")
+            << '\n';
+
+    if (game && editor)
+    {
+        editor->SetContext(&game->GetScene());
+        std::cout << "Scene enviada al editor\n";
+    }
+
     while (!m_Window.ShouldClose())
     {
         Time::Update(
@@ -62,7 +85,10 @@ void Application::Run()
 
         m_ImGuiLayer.Begin();
 
-        ImGui::ShowDemoWindow();
+        for (Layer* layer : m_LayerStack)
+        {
+            layer->OnImGuiRender();
+        }
 
         m_ImGuiLayer.End();
 
@@ -127,9 +153,12 @@ void Application::PushLayer(
     m_LayerStack.PushLayer(layer);
 }
 
-void Application::PushOverlay(
-    Layer* layer)
+void Application::PushOverlay(Layer* layer)
 {
+    std::cout << "PushOverlay: "
+              << layer->GetName()
+              << '\n';
+
     m_LayerStack.PushOverlay(layer);
 }
 

@@ -33,6 +33,18 @@ public:
 
     void PushOverlay(Layer* layer);
 
+    template<typename T>
+    T* GetLayer()
+    {
+        for (Layer* layer : m_LayerStack)
+        {
+            if (T* casted = dynamic_cast<T*>(layer))
+                return casted;
+        }
+
+        return nullptr;
+    }
+
     static Application& Get();
 
     Window& GetWindow()
@@ -51,12 +63,8 @@ private:
 
     ImGuiLayer m_ImGuiLayer;
 
-    Mesh m_Mesh;
-    
-    Transform m_Transform;
-    CameraController m_CameraController;
-    Scene m_Scene;
     LayerStack m_LayerStack;
+
     static Application* s_Instance;
     
 };

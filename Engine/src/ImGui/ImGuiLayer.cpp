@@ -4,6 +4,8 @@
 #include "AtlasEngine/Core/Window.h"
 
 #include <imgui.h>
+#include <iostream>
+#include <filesystem>
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -32,6 +34,27 @@ void ImGuiLayer::OnAttach()
 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
+    std::cout
+        << "Ini filename: "
+        << (io.IniFilename ? io.IniFilename : "null")
+        << '\n';
+
+    std::cout
+        << "Ini filename: "
+        << (io.IniFilename ? io.IniFilename : "null")
+        << '\n';
+
+    
+
+    std::cout
+        << "Working directory: "
+        << std::filesystem::current_path()
+        << '\n';
+
+
+
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
     ImGui::StyleColorsDark();
 
     Window& window =
@@ -45,6 +68,8 @@ void ImGuiLayer::OnAttach()
         true);
 
     ImGui_ImplOpenGL3_Init("#version 330");
+
+    
 }
 
 void ImGuiLayer::OnDetach()
@@ -63,6 +88,9 @@ void ImGuiLayer::Begin()
     ImGui_ImplGlfw_NewFrame();
 
     ImGui::NewFrame();
+
+    /* static bool demo = true;
+    ImGui::ShowDemoWindow(&demo); */
 }
 
 void ImGuiLayer::End()

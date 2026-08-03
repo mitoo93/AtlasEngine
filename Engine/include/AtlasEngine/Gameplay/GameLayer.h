@@ -20,6 +20,11 @@ public:
     void OnUpdate(float dt) override;
     void OnDetach() override;
 
+    Scene& GetScene()
+    {
+        return m_Scene;
+    }
+
 private:
 
     Scene m_Scene;

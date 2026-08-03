@@ -25,12 +25,13 @@ namespace AtlasEngine
 void GameLayer::OnAttach()
 {
     std::cout << "GameLayer Attach\n";
+
     m_Scene.AddSystem<RenderSystem>();
 
     //----------------------------------------------------
     // Recursos
     //----------------------------------------------------
-    
+
     AssetManager::LoadShader(
         "Basic",
         "Assets/Shaders/Basic.vert",
@@ -44,13 +45,11 @@ void GameLayer::OnAttach()
         "Quad",
         MeshFactory::CreateQuad());
 
-
     if (SceneSerializer::Load(
         m_Scene,
         "Assets/Scenes/Test.scene"))
     {
-        std::cout
-            << "Escena cargada\n";
+        std::cout << "Escena cargada\n";
     }
     else
     {
@@ -60,7 +59,7 @@ void GameLayer::OnAttach()
 
         Entity& camera =
             m_Scene.CreateEntity("MainCamera");
-        
+
         camera.AddComponent<CameraComponent>();
 
         CameraComponent& cameraComponent =
@@ -115,17 +114,11 @@ void GameLayer::OnAttach()
         player.AddComponent<MeshRendererComponent>();
         player.AddComponent<MaterialComponent>();
 
-        MeshRendererComponent& renderer =
-            player.GetComponent<MeshRendererComponent>();
+        player.GetComponent<MeshRendererComponent>()
+            .SetMesh(AssetManager::GetMesh("Quad"));
 
-        MaterialComponent& material =
-            player.GetComponent<MaterialComponent>();
-
-        renderer.SetMesh(
-            AssetManager::GetMesh("Quad"));
-
-        material.SetMaterial(
-            AssetManager::GetMaterial("Default"));
+        player.GetComponent<MaterialComponent>()
+            .SetMaterial(AssetManager::GetMaterial("Default"));
 
         //----------------------------------------------------
         // Enemy
@@ -133,17 +126,9 @@ void GameLayer::OnAttach()
 
         m_Scene.CreateEntity("Enemy");
 
-        if (SceneSerializer::Save(
-                m_Scene,
-                "Assets/Scenes/Test.scene"))
-        {
-            std::cout << "Escena creada y guardada\n";
-        }
-        else
-        {
-            std::cout << "ERROR al guardar la escena\n";
-        }
-
+        SceneSerializer::Save(
+            m_Scene,
+            "Assets/Scenes/Test.scene");
     }
 }
 
