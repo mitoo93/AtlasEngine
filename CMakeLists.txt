@@ -14,6 +14,8 @@ add_subdirectory(External/glfw)
 
 add_subdirectory(External/glad)
 
+add_subdirectory(External/imgui)
+
 add_subdirectory(Engine)
 
 add_subdirectory(Sandbox)

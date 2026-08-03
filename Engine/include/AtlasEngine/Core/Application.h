@@ -11,6 +11,7 @@
 #include "AtlasEngine/Systems/RenderSystem.h"
 #include "AtlasEngine/Events/Event.h"
 #include "AtlasEngine/Events/WindowEvent.h"
+#include "AtlasEngine/ImGui/ImGuiLayer.h"
 
 namespace AtlasEngine
 {
@@ -47,7 +48,11 @@ public:
 private:
 
     Window m_Window;
+
+    ImGuiLayer m_ImGuiLayer;
+
     Mesh m_Mesh;
+    
     Transform m_Transform;
     CameraController m_CameraController;
     Scene m_Scene;

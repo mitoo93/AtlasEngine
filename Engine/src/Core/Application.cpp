@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <imgui.h>
 
 #include "AtlasEngine/Core/Application.h"
 #include "AtlasEngine/Core/Window.h"
@@ -31,6 +32,8 @@ Application::Application()
 
     m_Window.Create(props);
 
+    m_ImGuiLayer.OnAttach();
+
     m_Window.SetCursorEnabled(false);
 
     Input::SetNativeWindow(
@@ -56,6 +59,12 @@ void Application::Run()
         {
             layer->OnUpdate(Time::GetDeltaTime());
         }
+
+        m_ImGuiLayer.Begin();
+
+        ImGui::ShowDemoWindow();
+
+        m_ImGuiLayer.End();
 
         if (Input::IsKeyPressed(Key::Escape))
             break;

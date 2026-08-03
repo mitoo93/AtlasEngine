@@ -37,6 +37,8 @@ add_library(Engine STATIC
     src/Gameplay/GameLayer.cpp
 
     src/Editor/EditorLayer.cpp
+
+    src/ImGui/ImGuiLayer.cpp
     
 )
 
@@ -49,4 +51,5 @@ target_link_libraries(Engine
     PUBLIC
         glfw
         glad
+        imgui
 )
