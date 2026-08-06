@@ -54,4 +54,5 @@ target_link_libraries(Engine
         glfw
         glad
         imgui
+        imguizmo
 )

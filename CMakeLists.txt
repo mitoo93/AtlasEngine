@@ -16,6 +16,8 @@ add_subdirectory(External/glad)
 
 add_subdirectory(External/imgui)
 
+add_subdirectory(External/imguizmo)
+
 add_subdirectory(Engine)
 
 add_subdirectory(Sandbox)
