@@ -39,6 +39,8 @@ add_library(Engine STATIC
     src/Editor/EditorLayer.cpp
 
     src/ImGui/ImGuiLayer.cpp
+
+    src/Renderer/Framebuffer.cpp
     
 )
 

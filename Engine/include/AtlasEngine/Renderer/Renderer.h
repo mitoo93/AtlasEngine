@@ -1,5 +1,10 @@
 #pragma once
 
+#include <memory>
+#include <cstdint>
+
+#include "AtlasEngine/Renderer/Framebuffer.h"
+
 namespace AtlasEngine
 {
 
@@ -17,6 +22,16 @@ public:
     static void DrawScene(
         const Scene& scene,
         Shader& shader);
+
+    static void InitFramebuffer(
+    uint32_t width,
+    uint32_t height);
+
+    static Framebuffer& GetFramebuffer();
+
+private:
+
+    static std::unique_ptr<Framebuffer> s_Framebuffer;
 };
 
 }

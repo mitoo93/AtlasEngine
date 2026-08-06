@@ -2,6 +2,7 @@
 #include "AtlasEngine/Scene/Scene.h"
 #include "AtlasEngine/Math/Transform.h"
 #include "AtlasEngine/Core/Application.h"
+#include "AtlasEngine/Renderer/Renderer.h"
 
 #include <imgui.h>
 #include <iostream>
@@ -127,14 +128,15 @@ void EditorLayer::OnImGuiRender()
 
     m_ViewportSize = ImGui::GetContentRegionAvail();
 
-    ImGui::Text(
-        "Size: %.0f x %.0f",
-        m_ViewportSize.x,
-        m_ViewportSize.y);
-
+    ImGui::Image(
+        (ImTextureID)(intptr_t)
+            Renderer::GetFramebuffer().GetColorAttachment(),
+        m_ViewportSize,
+        ImVec2(0, 1),
+        ImVec2(1, 0));
 
     ImGui::End();
-    
+        
     //------------------------------------
     // Scene Hierarchy
     //------------------------------------

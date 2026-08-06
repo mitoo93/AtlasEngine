@@ -14,6 +14,8 @@
 #include "AtlasEngine/Gameplay/GameLayer.h"
 #include "AtlasEngine/Editor/EditorLayer.h"
 
+#include "AtlasEngine/Renderer/Renderer.h"
+
 #include <iostream>
 
 namespace AtlasEngine
@@ -34,6 +36,10 @@ Application::Application()
         });
 
     m_Window.Create(props);
+
+    Renderer::InitFramebuffer(
+        m_Window.GetWidth(),
+        m_Window.GetHeight());
 
     m_ImGuiLayer.OnAttach();
 
