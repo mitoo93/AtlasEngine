@@ -37,8 +37,6 @@ Application::Application()
 
     m_ImGuiLayer.OnAttach();
 
-    m_Window.SetCursorEnabled(false);
-
     Input::SetNativeWindow(
         m_Window.GetNativeWindow());
 
@@ -68,7 +66,9 @@ void Application::Run()
     if (game && editor)
     {
         editor->SetContext(&game->GetScene());
-        std::cout << "Scene enviada al editor\n";
+
+        std::cout 
+            << "Scene enviada al editor\n";
     }
 
     while (!m_Window.ShouldClose())

@@ -6,8 +6,13 @@ int main()
 {
     AtlasEngine::Application app;
 
-    app.PushLayer(new AtlasEngine::GameLayer());
-    app.PushOverlay(new AtlasEngine::EditorLayer());
+    auto* gameLayer = new AtlasEngine::GameLayer();
+    auto* editorLayer = new AtlasEngine::EditorLayer();
+
+    gameLayer->SetEditor(editorLayer);
+
+    app.PushLayer(gameLayer);
+    app.PushOverlay(editorLayer);
 
     app.Run();
 

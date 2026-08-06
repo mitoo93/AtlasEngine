@@ -20,7 +20,6 @@ ImGuiLayer::ImGuiLayer()
 
 ImGuiLayer::~ImGuiLayer()
 {
-    OnDetach();
 }
 
 void ImGuiLayer::OnAttach()
@@ -40,20 +39,10 @@ void ImGuiLayer::OnAttach()
         << '\n';
 
     std::cout
-        << "Ini filename: "
-        << (io.IniFilename ? io.IniFilename : "null")
-        << '\n';
-
-    
-
-    std::cout
         << "Working directory: "
         << std::filesystem::current_path()
         << '\n';
 
-
-
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
     ImGui::StyleColorsDark();
 

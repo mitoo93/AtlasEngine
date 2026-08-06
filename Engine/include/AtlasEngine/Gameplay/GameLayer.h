@@ -7,6 +7,8 @@
 namespace AtlasEngine
 {
 
+class EditorLayer;
+
 class GameLayer : public Layer
 {
 public:
@@ -25,6 +27,11 @@ public:
         return m_Scene;
     }
 
+    void SetEditor(EditorLayer* editor)
+    {
+        m_Editor = editor;
+    }
+
 private:
 
     Scene m_Scene;
@@ -32,6 +39,8 @@ private:
     CameraController m_CameraController;
 
     bool m_FirstFrame = true;
+
+    EditorLayer* m_Editor = nullptr;
 };
 
 }

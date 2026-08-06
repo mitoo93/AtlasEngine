@@ -15,6 +15,8 @@
 #include "AtlasEngine/Scene/MaterialComponent.h"
 #include "AtlasEngine/Scene/CameraComponent.h"
 
+#include "AtlasEngine/Editor/EditorLayer.h"
+
 #include "AtlasEngine/Systems/RenderSystem.h"
 
 #include <iostream>
@@ -140,9 +142,13 @@ void GameLayer::OnUpdate(float dt)
     if (!camera)
         return;
 
-    m_CameraController.Update(
-        camera->GetCamera(),
-        dt);
+    // Solo mover la cámara cuando estamos en modo Play
+    if (!m_Editor || m_Editor->IsPlaying())
+    {
+        m_CameraController.Update(
+            camera->GetCamera(),
+            dt);
+    }
 
     Renderer::BeginFrame();
 
