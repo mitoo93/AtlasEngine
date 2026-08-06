@@ -29,6 +29,10 @@ public:
 
     static Framebuffer& GetFramebuffer();
 
+    static void ResizeFramebuffer(
+        uint32_t width,
+        uint32_t height);
+
 private:
 
     static std::unique_ptr<Framebuffer> s_Framebuffer;

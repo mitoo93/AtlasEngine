@@ -142,8 +142,41 @@ void GameLayer::OnUpdate(float dt)
     if (!camera)
         return;
 
-    // Solo mover la cámara cuando estamos en modo Play
-    if (!m_Editor || m_Editor->IsPlaying())
+    EditorLayer* editor =
+        Application::Get().GetLayer<EditorLayer>();
+
+    //------------------------------------------------
+    // Ajustar aspect ratio al tamaño del Viewport
+    //------------------------------------------------
+
+    if (editor)
+    {
+        ImVec2 viewportSize =
+            editor->GetViewportSize();
+
+        if (viewportSize.y > 0.0f)
+        {
+            camera->GetCamera().SetAspectRatio(
+                viewportSize.x / viewportSize.y);
+        }
+    }
+
+    //------------------------------------------------
+    // Permitir mover cámara solo si procede
+    //------------------------------------------------
+
+    bool allowCamera = true;
+
+    if (editor)
+    {
+        if (editor->IsEditing())
+            allowCamera = editor->IsViewportHovered();
+
+        if (editor->IsPlaying())
+            allowCamera = true;
+    }
+
+    if (allowCamera)
     {
         m_CameraController.Update(
             camera->GetCamera(),
@@ -153,16 +186,6 @@ void GameLayer::OnUpdate(float dt)
     Renderer::BeginFrame();
 
     m_Scene.Update();
-
-    GLenum error = glGetError();
-
-    if (error != GL_NO_ERROR)
-    {
-        std::cout
-            << "OpenGL Error: "
-            << error
-            << '\n';
-    }
 
     Renderer::EndFrame();
 }

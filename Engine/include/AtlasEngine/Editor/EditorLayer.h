@@ -54,6 +54,16 @@ public:
         return m_ViewportSize;
     }
 
+    bool IsViewportFocused() const
+    {
+        return m_ViewportFocused;
+    }
+
+    bool IsViewportHovered() const
+    {
+        return m_ViewportHovered;
+    }
+
 private:
 
     Scene* m_Context = nullptr;
@@ -63,6 +73,11 @@ private:
     EditorState m_State = EditorState::Edit;
 
     ImVec2 m_ViewportSize = { 0.0f, 0.0f };
+
+    ImVec2 m_LastViewportSize = { 0.0f, 0.0f };
+
+    bool m_ViewportFocused = false;
+    bool m_ViewportHovered = false;
 };
 
 } // namespace AtlasEngine

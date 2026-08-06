@@ -71,7 +71,7 @@ void EditorLayer::OnImGuiRender()
             ImGui::GetIO().DisplaySize.x,
             40),
         ImGuiCond_Always);
-    
+
     ImGui::Begin(
         "Toolbar",
         nullptr,
@@ -84,9 +84,9 @@ void EditorLayer::OnImGuiRender()
         if (ImGui::Button("Play"))
         {
             std::cout << "PLAY\n";
-            
+
             m_State = EditorState::Play;
-            
+
             /* Application::Get()
                 .GetWindow()
                 .SetCursorEnabled(false); */
@@ -97,13 +97,31 @@ void EditorLayer::OnImGuiRender()
         if (ImGui::Button("Stop"))
         {
             std::cout << "STOP\n";
-            
+
             m_State = EditorState::Edit;
-            
+
             /* Application::Get()
                 .GetWindow()
                 .SetCursorEnabled(true); */
         }
+    }
+
+    ImGui::SameLine();
+    ImGui::Text("| Estado:");
+
+    ImGui::SameLine();
+
+    if (m_State == EditorState::Play)
+    {
+        ImGui::TextColored(
+            ImVec4(0.2f, 1.0f, 0.2f, 1.0f),
+            "PLAY");
+    }
+    else
+    {
+        ImGui::TextColored(
+            ImVec4(1.0f, 0.8f, 0.2f, 1.0f),
+            "EDIT");
     }
 
     ImGui::End();
@@ -126,7 +144,32 @@ void EditorLayer::OnImGuiRender()
 
     ImGui::Begin("Viewport");
 
+    m_ViewportFocused = ImGui::IsWindowFocused();
+    m_ViewportHovered = ImGui::IsWindowHovered();
+    
     m_ViewportSize = ImGui::GetContentRegionAvail();
+
+    if (m_ViewportSize.x > 0 &&
+        m_ViewportSize.y > 0)
+    {
+        if (m_ViewportSize.x != m_LastViewportSize.x ||
+            m_ViewportSize.y != m_LastViewportSize.y)
+        {
+            Renderer::ResizeFramebuffer(
+                (uint32_t)m_ViewportSize.x,
+                (uint32_t)m_ViewportSize.y);
+
+            m_LastViewportSize = m_ViewportSize;
+        }
+    }
+
+    ImGui::Text(
+        "Focused: %s",
+        m_ViewportFocused ? "Yes" : "No");
+
+    ImGui::Text(
+        "Hovered: %s",
+        m_ViewportHovered ? "Yes" : "No");
 
     ImGui::Image(
         (ImTextureID)(intptr_t)

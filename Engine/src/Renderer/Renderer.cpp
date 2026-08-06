@@ -27,6 +27,12 @@ void Renderer::BeginFrame()
 {
     s_Framebuffer->Bind();
 
+    glViewport(
+        0,
+        0,
+        s_Framebuffer->GetWidth(),
+        s_Framebuffer->GetHeight());
+
     RenderCommand::SetClearColor(
         0.15f,
         0.15f,
@@ -39,6 +45,24 @@ void Renderer::BeginFrame()
 void Renderer::EndFrame()
 {
     s_Framebuffer->Unbind();
+}
+
+void Renderer::ResizeFramebuffer(
+    uint32_t width,
+    uint32_t height)
+{
+    if (!s_Framebuffer)
+        return;
+
+    if (s_Framebuffer->GetWidth() == width &&
+        s_Framebuffer->GetHeight() == height)
+    {
+        return;
+    }
+
+    s_Framebuffer->Resize(
+        width,
+        height);
 }
 
 }
