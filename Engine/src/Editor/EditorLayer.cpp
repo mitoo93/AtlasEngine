@@ -33,6 +33,31 @@ void EditorLayer::OnImGuiRender()
 {
 
     //------------------------------------
+    // Layout
+    //------------------------------------
+
+    const float toolbarHeight = 40.0f;
+
+    const float hierarchyWidth = 250.0f;
+    const float inspectorWidth = 320.0f;
+    const float statsHeight = 120.0f;
+
+    ImVec2 display = ImGui::GetIO().DisplaySize;
+
+    float viewportX = hierarchyWidth;
+    float viewportY = toolbarHeight;
+
+    float viewportWidth =
+        display.x -
+        hierarchyWidth -
+        inspectorWidth;
+
+    float viewportHeight =
+        display.y -
+        toolbarHeight -
+        statsHeight;
+
+    //------------------------------------
     // Toolbar
     //------------------------------------
 
@@ -87,12 +112,16 @@ void EditorLayer::OnImGuiRender()
     //------------------------------------
 
     ImGui::SetNextWindowPos(
-        ImVec2(580, 50),
-        ImGuiCond_FirstUseEver);
+        ImVec2(
+            viewportX,
+            viewportY),
+        ImGuiCond_Always);
 
     ImGui::SetNextWindowSize(
-        ImVec2(900, 700),
-        ImGuiCond_FirstUseEver);
+        ImVec2(
+            viewportWidth,
+            viewportHeight),
+        ImGuiCond_Always);
 
     ImGui::Begin("Viewport");
 
@@ -103,13 +132,6 @@ void EditorLayer::OnImGuiRender()
         m_ViewportSize.x,
         m_ViewportSize.y);
 
-    m_ViewportSize =
-        ImGui::GetContentRegionAvail();
-
-    ImGui::Text(
-        "Size: %.0f x %.0f",
-        m_ViewportSize.x,
-        m_ViewportSize.y);
 
     ImGui::End();
     
@@ -118,12 +140,14 @@ void EditorLayer::OnImGuiRender()
     //------------------------------------
 
     ImGui::SetNextWindowPos(
-        ImVec2(10,50),
-        ImGuiCond_FirstUseEver);
+        ImVec2(0, toolbarHeight),
+        ImGuiCond_Always);
 
     ImGui::SetNextWindowSize(
-        ImVec2(250, 500),
-        ImGuiCond_FirstUseEver);
+        ImVec2(
+            hierarchyWidth,
+            display.y - toolbarHeight),
+        ImGuiCond_Always);
 
     
     ImGui::Begin("Scene Hierarchy");
@@ -147,12 +171,16 @@ void EditorLayer::OnImGuiRender()
     //------------------------------------
 
     ImGui::SetNextWindowPos(
-        ImVec2(270,50),
-        ImGuiCond_FirstUseEver);
+        ImVec2(
+            display.x - inspectorWidth,
+            toolbarHeight),
+        ImGuiCond_Always);
 
     ImGui::SetNextWindowSize(
-        ImVec2(340, 500),
-        ImGuiCond_FirstUseEver);
+        ImVec2(
+            inspectorWidth,
+            display.y - toolbarHeight),
+        ImGuiCond_Always);
 
     
     ImGui::Begin("Inspector");
@@ -218,12 +246,16 @@ void EditorLayer::OnImGuiRender()
     //------------------------------------
 
     ImGui::SetNextWindowPos(
-        ImVec2(580,760),
-        ImGuiCond_FirstUseEver);
+        ImVec2(
+            hierarchyWidth,
+            display.y - statsHeight),
+        ImGuiCond_Always);
 
     ImGui::SetNextWindowSize(
-        ImVec2(560,120),
-        ImGuiCond_FirstUseEver);
+        ImVec2(
+            viewportWidth,
+            statsHeight),
+        ImGuiCond_Always);
 
     
     ImGui::Begin("Statistics");

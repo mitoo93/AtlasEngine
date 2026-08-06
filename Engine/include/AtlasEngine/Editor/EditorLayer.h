@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AtlasEngine/Core/Layer.h"
+#include <imgui.h>
 
 namespace AtlasEngine
 {
