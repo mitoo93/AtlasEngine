@@ -81,6 +81,37 @@ void EditorLayer::OnImGuiRender()
     }
 
     ImGui::End();
+
+    //------------------------------------
+    // Viewport
+    //------------------------------------
+
+    ImGui::SetNextWindowPos(
+        ImVec2(580, 50),
+        ImGuiCond_FirstUseEver);
+
+    ImGui::SetNextWindowSize(
+        ImVec2(900, 700),
+        ImGuiCond_FirstUseEver);
+
+    ImGui::Begin("Viewport");
+
+    m_ViewportSize = ImGui::GetContentRegionAvail();
+
+    ImGui::Text(
+        "Size: %.0f x %.0f",
+        m_ViewportSize.x,
+        m_ViewportSize.y);
+
+    m_ViewportSize =
+        ImGui::GetContentRegionAvail();
+
+    ImGui::Text(
+        "Size: %.0f x %.0f",
+        m_ViewportSize.x,
+        m_ViewportSize.y);
+
+    ImGui::End();
     
     //------------------------------------
     // Scene Hierarchy
@@ -99,8 +130,6 @@ void EditorLayer::OnImGuiRender()
 
     if (m_Context)
     {
-
-        
         for (const auto& entity : m_Context->GetEntities())
             {
 
@@ -122,7 +151,7 @@ void EditorLayer::OnImGuiRender()
         ImGuiCond_FirstUseEver);
 
     ImGui::SetNextWindowSize(
-        ImVec2(300, 500),
+        ImVec2(340, 500),
         ImGuiCond_FirstUseEver);
 
     
@@ -189,11 +218,11 @@ void EditorLayer::OnImGuiRender()
     //------------------------------------
 
     ImGui::SetNextWindowPos(
-        ImVec2(580,50),
+        ImVec2(580,760),
         ImGuiCond_FirstUseEver);
 
     ImGui::SetNextWindowSize(
-        ImVec2(220, 120),
+        ImVec2(560,120),
         ImGuiCond_FirstUseEver);
 
     

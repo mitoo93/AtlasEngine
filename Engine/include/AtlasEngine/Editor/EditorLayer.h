@@ -48,6 +48,11 @@ public:
         return m_State == EditorState::Edit;
     }
 
+    const ImVec2& GetViewportSize() const
+    {
+        return m_ViewportSize;
+    }
+
 private:
 
     Scene* m_Context = nullptr;
@@ -55,6 +60,8 @@ private:
     Entity* m_SelectedEntity = nullptr;
 
     EditorState m_State = EditorState::Edit;
+
+    ImVec2 m_ViewportSize = { 0.0f, 0.0f };
 };
 
 } // namespace AtlasEngine
