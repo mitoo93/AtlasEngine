@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AtlasEngine/Core/Layer.h"
+#include "AtlasEngine/ImGuizmo/ImGuizmoLayer.h"
 #include <imgui.h>
 
 namespace AtlasEngine
@@ -64,9 +65,16 @@ public:
         return m_ViewportHovered;
     }
 
+    const ImVec2& GetViewportPosition() const
+    {
+        return m_ViewportPosition;
+    }
+
 private:
 
     Scene* m_Context = nullptr;
+
+    ImGuizmoLayer m_GizmoLayer;
 
     Entity* m_SelectedEntity = nullptr;
 
@@ -78,6 +86,8 @@ private:
 
     bool m_ViewportFocused = false;
     bool m_ViewportHovered = false;
+
+    ImVec2 m_ViewportPosition = { 0.0f, 0.0f };
 };
 
 } // namespace AtlasEngine

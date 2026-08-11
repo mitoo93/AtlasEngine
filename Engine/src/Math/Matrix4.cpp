@@ -171,4 +171,14 @@ float Matrix4::GetTranslationZ() const
     return m_Values[14];
 }
 
+float* Matrix4::Data()
+{
+    return m_Values;
+}
+
+const float* Matrix4::Data() const
+{
+    return m_Values;
+}
+
 }

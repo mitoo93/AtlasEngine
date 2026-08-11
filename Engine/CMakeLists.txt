@@ -41,6 +41,7 @@ add_library(Engine STATIC
     src/ImGui/ImGuiLayer.cpp
 
     src/Renderer/Framebuffer.cpp
+    src/ImGuizmo/ImGuizmoLayer.cpp
     
 )
 

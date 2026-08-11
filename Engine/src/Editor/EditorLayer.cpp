@@ -3,6 +3,7 @@
 #include "AtlasEngine/Math/Transform.h"
 #include "AtlasEngine/Core/Application.h"
 #include "AtlasEngine/Renderer/Renderer.h"
+#include "AtlasEngine/ImGuizmo/ImGuizmoLayer.h"
 
 #include <imgui.h>
 #include <iostream>
@@ -33,6 +34,14 @@ void EditorLayer::OnDetach()
 void EditorLayer::OnImGuiRender()
 {
 
+    if (!m_SelectedEntity &&
+        m_Context &&
+        !m_Context->GetEntities().empty())
+    {
+        m_SelectedEntity =
+            m_Context->GetEntities().front().get();
+    }
+    
     //------------------------------------
     // Layout
     //------------------------------------
@@ -144,6 +153,14 @@ void EditorLayer::OnImGuiRender()
 
     ImGui::Begin("Viewport");
 
+    ImVec2 viewportPos =
+        ImGui::GetWindowPos();
+
+    viewportPos.x += ImGui::GetWindowContentRegionMin().x;
+    viewportPos.y += ImGui::GetWindowContentRegionMin().y;
+
+    m_ViewportPosition = viewportPos;
+
     m_ViewportFocused = ImGui::IsWindowFocused();
     m_ViewportHovered = ImGui::IsWindowHovered();
     
@@ -177,6 +194,17 @@ void EditorLayer::OnImGuiRender()
         m_ViewportSize,
         ImVec2(0, 1),
         ImVec2(1, 0));
+
+    if (m_SelectedEntity)
+        ImGui::Text("Entidad seleccionada");
+    else
+        ImGui::Text("NO HAY ENTIDAD");
+    
+    m_GizmoLayer.OnImGuiRender(
+        m_SelectedEntity,
+        m_Context,
+        m_ViewportPosition,
+        m_ViewportSize);
 
     ImGui::End();
         

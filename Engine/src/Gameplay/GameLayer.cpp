@@ -126,11 +126,31 @@ void GameLayer::OnAttach()
         // Enemy
         //----------------------------------------------------
 
-        m_Scene.CreateEntity("Enemy");
+        Entity& enemy =
+            m_Scene.CreateEntity("Enemy");
 
-        SceneSerializer::Save(
-            m_Scene,
-            "Assets/Scenes/Test.scene");
+        enemy.GetTransform().SetPosition({
+            2.0f,
+            0.0f,
+            -2.0f
+        });
+
+        enemy.GetTransform().SetScale({
+            0.5f,
+            0.5f,
+            1.0f
+        });
+
+        enemy.AddComponent<MeshRendererComponent>();
+        enemy.AddComponent<MaterialComponent>();
+
+        enemy.GetComponent<MeshRendererComponent>()
+            .SetMesh(
+                AssetManager::GetMesh("Quad"));
+
+        enemy.GetComponent<MaterialComponent>()
+            .SetMaterial(
+                AssetManager::GetMaterial("Default"));
     }
 }
 

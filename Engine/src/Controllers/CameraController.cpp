@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 
 #include "AtlasEngine/Controllers/CameraController.h"
 

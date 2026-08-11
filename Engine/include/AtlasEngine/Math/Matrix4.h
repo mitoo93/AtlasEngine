@@ -17,11 +17,6 @@ public:
 
     Matrix4 operator*(const Matrix4& other) const;
 
-    const float* Data() const
-    {
-        return m_Values;
-    }
-
     static Matrix4 Translate(float x,
                          float y,
                          float z);
@@ -41,6 +36,10 @@ public:
         float aspectRatio,
         float nearPlane,
         float farPlane);
+
+    float* Data();
+
+    const float* Data() const;
 
 private:
 
