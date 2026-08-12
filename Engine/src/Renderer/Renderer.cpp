@@ -20,6 +20,15 @@ void Renderer::InitFramebuffer(
 
 Framebuffer& Renderer::GetFramebuffer()
 {
+    if (!s_Framebuffer)
+    {
+        std::cerr
+            << "ERROR: Renderer::GetFramebuffer() llamado "
+               "antes de InitFramebuffer()\n";
+
+        std::abort();
+    }
+
     return *s_Framebuffer;
 }
 

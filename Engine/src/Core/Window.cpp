@@ -95,11 +95,16 @@
 
         glfwMakeContextCurrent(m_Data.Handle);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-        {
-            std::cout << "Error inicializando GLAD\n";
-            return false;
-        }
+    if (!gladLoadGLLoader(
+            (GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Error inicializando GLAD\n";
+
+        glfwDestroyWindow(m_Data.Handle);
+        m_Data.Handle = nullptr;
+
+        return false;
+    }
 
         std::cout << "OpenGL Version : " << glGetString(GL_VERSION) << '\n';
         std::cout << "GPU            : " << glGetString(GL_RENDERER) << '\n';
@@ -115,6 +120,7 @@
         if (m_Data.Handle)
         {
             glfwDestroyWindow(m_Data.Handle);
+            m_Data.Handle = nullptr;
         }
     }
 
@@ -124,10 +130,8 @@
     }
 
     void Window::Update()
-{
+    {
         glfwSwapBuffers(m_Data.Handle);
-
-        glfwPollEvents();
     }
 
     bool Window::ShouldClose() const

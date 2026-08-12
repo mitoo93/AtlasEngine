@@ -71,32 +71,21 @@ void Transform::SetParent(Transform* parent)
 Matrix4 Transform::GetLocalMatrix() const
 {
     return
-    Matrix4::Translate(
-        m_Position.x,
-        m_Position.y,
-        m_Position.z)
-
-    *
-
-    Matrix4::RotateZ(
-        m_Rotation.z)
-
-    *
-
-    Matrix4::RotateY(
-        m_Rotation.y)
-
-    *
-
-    Matrix4::RotateX(
-        m_Rotation.x)
-
-    *
-
-    Matrix4::Scale(
-        m_Scale.x,
-        m_Scale.y,
-        m_Scale.z);
+        Matrix4::Translate(
+            m_Position.x,
+            m_Position.y,
+            m_Position.z)
+        *
+        Matrix4::RotateZ(m_Rotation.z)
+        *
+        Matrix4::RotateY(m_Rotation.y)
+        *
+        Matrix4::RotateX(m_Rotation.x)
+        *
+        Matrix4::Scale(
+            m_Scale.x,
+            m_Scale.y,
+            m_Scale.z);
 }
 
 const std::vector<Transform*>& Transform::GetChildren() const

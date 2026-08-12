@@ -156,56 +156,87 @@ void GameLayer::OnAttach()
 
 void GameLayer::OnUpdate(float dt)
 {
+    EditorLayer* editor =
+        Application::Get()
+            .GetLayer<EditorLayer>();
+
+
     CameraComponent* camera =
         m_Scene.FindPrimaryCamera();
 
-    if (!camera)
-        return;
 
-    EditorLayer* editor =
-        Application::Get().GetLayer<EditorLayer>();
+    RenderSystem& renderSystem =
+        m_Scene.GetSystem<RenderSystem>();
 
-    //------------------------------------------------
-    // Ajustar aspect ratio al tamaño del Viewport
-    //------------------------------------------------
 
-    if (editor)
+    // ====================================================
+    // EDIT MODE
+    // ====================================================
+
+    if (editor &&
+        editor->IsEditing())
     {
-        ImVec2 viewportSize =
-            editor->GetViewportSize();
+        const EditorCamera& editorCamera =
+            editor->GetEditorCamera();
 
-        if (viewportSize.y > 0.0f)
+
+        renderSystem.SetViewProjection(
+            editorCamera.GetViewMatrix(),
+            editorCamera.GetProjectionMatrix());
+    }
+    else
+    {
+        // =================================================
+        // PLAY MODE
+        // =================================================
+
+        if (!camera)
+            return;
+
+
+        renderSystem.ClearViewProjection();
+
+
+        if (editor)
         {
-            camera->GetCamera().SetAspectRatio(
-                viewportSize.x / viewportSize.y);
+            ImVec2 viewportSize =
+                editor->GetViewportSize();
+
+
+            if (viewportSize.x > 0.0f &&
+                viewportSize.y > 0.0f)
+            {
+                camera->GetCamera()
+                    .SetAspectRatio(
+                        viewportSize.x /
+                        viewportSize.y);
+
+
+                Renderer::ResizeFramebuffer(
+                    static_cast<uint32_t>(
+                        viewportSize.x),
+
+                    static_cast<uint32_t>(
+                        viewportSize.y));
+            }
         }
-    }
 
-    //------------------------------------------------
-    // Permitir mover cámara solo si procede
-    //------------------------------------------------
 
-    bool allowCamera = true;
-
-    if (editor)
-    {
-        if (editor->IsEditing())
-            allowCamera = editor->IsViewportHovered();
-
-        if (editor->IsPlaying())
-            allowCamera = true;
-    }
-
-    if (allowCamera)
-    {
         m_CameraController.Update(
             camera->GetCamera(),
             dt);
     }
 
+
+    // ====================================================
+    // RENDER
+    // ====================================================
+
     Renderer::BeginFrame();
 
+
     m_Scene.Update();
+
 
     Renderer::EndFrame();
 }

@@ -14,6 +14,14 @@ enum class Key
 
     Q,
     E,
+    R,
+    X,
+
+    T,
+    Y,
+    U,
+    F,
+    G,
 
     Up,
     Down,

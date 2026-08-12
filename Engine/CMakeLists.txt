@@ -42,6 +42,8 @@ add_library(Engine STATIC
 
     src/Renderer/Framebuffer.cpp
     src/ImGuizmo/ImGuizmoLayer.cpp
+
+    src/Editor/EditorCamera.cpp
     
 )
 

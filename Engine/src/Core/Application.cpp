@@ -82,11 +82,32 @@ void Application::Run()
         Time::Update(
             static_cast<float>(glfwGetTime()));
 
+        glfwPollEvents();
         Input::Update();
 
-        for (Layer* layer : m_LayerStack)
+        // --------------------------------------------------------
+        // UPDATE ORDER
+        // --------------------------------------------------------
+        // Editor first:
+        //   - updates EditorCamera
+        //   - processes G / T / Y / U / X / F
+        //
+        // Game second:
+        //   - selects the correct render camera
+        //   - renders the scene
+        // --------------------------------------------------------
+
+        if (editor)
         {
-            layer->OnUpdate(Time::GetDeltaTime());
+            editor->OnUpdate(
+                Time::GetDeltaTime());
+        }
+
+
+        if (game)
+        {
+            game->OnUpdate(
+                Time::GetDeltaTime());
         }
 
         m_ImGuiLayer.Begin();
