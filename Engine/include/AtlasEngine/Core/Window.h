@@ -45,8 +45,6 @@ public:
 
     GLFWwindow* GetNativeWindow() const;
 
-    void SetCursorEnabled(bool enabled);
-
     using EventCallbackFn =
         std::function<void(Event&)>;
 

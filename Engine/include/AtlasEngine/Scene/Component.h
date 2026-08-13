@@ -11,8 +11,6 @@ public:
 
     virtual ~Component() = default;
 
-    Entity* GetEntity() const;
-
 private:
 
     friend class Entity;

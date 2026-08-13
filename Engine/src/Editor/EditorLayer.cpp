@@ -4,7 +4,6 @@
 #include "AtlasEngine/Math/Transform.h"
 #include "AtlasEngine/Core/Input.h"
 #include "AtlasEngine/Core/Key.h"
-#include "AtlasEngine/Core/Application.h"
 #include "AtlasEngine/Renderer/Renderer.h"
 
 #include <imgui.h>
@@ -21,19 +20,10 @@ void EditorLayer::OnAttach()
     std::cout
         << "EditorLayer Attach\n";
 
-    std::cout
-        << "EditorCamera Pos: "
-        << m_EditorCamera.GetPosition().x
-        << " "
-        << m_EditorCamera.GetPosition().y
-        << " "
-        << m_EditorCamera.GetPosition().z
-        << "\n";
 }
 
 void EditorLayer::OnUpdate(float deltaTime)
 {
-    m_DeltaTime = deltaTime;
     
     if (!IsEditing())
         return;
@@ -99,30 +89,10 @@ void EditorLayer::OnUpdate(float deltaTime)
             world.GetTranslationZ()
         };
 
-        std::cout
-            << "FOCUS target: "
-            << target.x << ", "
-            << target.y << ", "
-            << target.z
-            << "\n";
-
-        std::cout
-            << "CAMERA before: "
-            << m_EditorCamera.GetPosition().x << ", "
-            << m_EditorCamera.GetPosition().y << ", "
-            << m_EditorCamera.GetPosition().z
-            << "\n";
-
         m_EditorCamera.Focus(
             target,
             5.0f);
 
-        std::cout
-            << "CAMERA after: "
-            << m_EditorCamera.GetPosition().x << ", "
-            << m_EditorCamera.GetPosition().y << ", "
-            << m_EditorCamera.GetPosition().z
-            << "\n";
     }
 
 
@@ -149,9 +119,8 @@ void EditorLayer::OnUpdate(float deltaTime)
         !m_GizmoLayer.IsUsing();
 
     m_EditorCamera.Update(
-        m_DeltaTime,
+        deltaTime,
         allowCamera,
-        true,
         m_CameraRotationEnabled);
 
 }
@@ -329,10 +298,6 @@ void EditorLayer::OnImGuiRender()
 
     ImGui::Begin("Viewport");
 
-    m_ViewportFocused =
-        ImGui::IsWindowFocused(
-            ImGuiFocusedFlags_RootAndChildWindows);
-
     m_ViewportHovered =
         ImGui::IsWindowHovered(
             ImGuiHoveredFlags_RootAndChildWindows);
@@ -385,37 +350,6 @@ void EditorLayer::OnImGuiRender()
         m_ViewportSize);
 
     ImGui::End();
-
-    // ----------------------------------------------------
-    // MINI GIZMO
-    // ----------------------------------------------------
-
-    const float miniGizmoSize =
-        120.0f;
-
-    const float miniGizmoMargin =
-        15.0f;
-
-    ImVec2 miniGizmoPosition
-    {
-        m_ViewportPosition.x +
-            m_ViewportSize.x -
-            miniGizmoSize -
-            miniGizmoMargin,
-
-        m_ViewportPosition.y +
-            miniGizmoMargin
-    };
-
-    m_GizmoLayer.OnMiniGizmoRender(
-        m_SelectedEntity,
-        m_EditorCamera,
-        m_GizmoMode,
-        m_GizmoSpace,
-        miniGizmoPosition,
-        ImVec2(
-            miniGizmoSize,
-            miniGizmoSize));
 
     // ----------------------------------------------------
     // SCENE HIERARCHY

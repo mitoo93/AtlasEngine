@@ -27,10 +27,6 @@ public:
         return m_Scene;
     }
 
-    void SetEditor(EditorLayer* editor)
-    {
-        m_Editor = editor;
-    }
 
 private:
 
@@ -38,9 +34,6 @@ private:
 
     CameraController m_CameraController;
 
-    bool m_FirstFrame = true;
-
-    EditorLayer* m_Editor = nullptr;
 };
 
 }

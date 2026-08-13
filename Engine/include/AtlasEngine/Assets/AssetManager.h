@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include "AtlasEngine/Renderer/Mesh.h"
 
 namespace AtlasEngine
 {

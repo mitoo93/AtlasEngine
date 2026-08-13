@@ -2,13 +2,6 @@
 
 #include "AtlasEngine/Core/Window.h"
 #include "AtlasEngine/Core/LayerStack.h"
-#include "AtlasEngine/Renderer/Shader.h"
-#include "AtlasEngine/Renderer/Vertex.h"
-#include "AtlasEngine/Renderer/Mesh.h"
-#include "AtlasEngine/Math/Transform.h"
-#include "AtlasEngine/Controllers/CameraController.h"
-#include "AtlasEngine/Scene/Scene.h"
-#include "AtlasEngine/Systems/RenderSystem.h"
 #include "AtlasEngine/Events/Event.h"
 #include "AtlasEngine/Events/WindowEvent.h"
 #include "AtlasEngine/ImGui/ImGuiLayer.h"

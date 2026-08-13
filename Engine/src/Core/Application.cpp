@@ -61,20 +61,10 @@ void Application::Run()
     EditorLayer* editor =
         GetLayer<EditorLayer>();
 
-    std::cout << "GameLayer: "
-            << (game ? "OK" : "NULL")
-            << '\n';
-
-    std::cout << "EditorLayer: "
-            << (editor ? "OK" : "NULL")
-            << '\n';
-
     if (game && editor)
     {
         editor->SetContext(&game->GetScene());
 
-        std::cout 
-            << "Scene enviada al editor\n";
     }
 
     while (!m_Window.ShouldClose())
@@ -97,17 +87,17 @@ void Application::Run()
         //   - renders the scene
         // --------------------------------------------------------
 
+        const float deltaTime =
+            Time::GetDeltaTime();
+
         if (editor)
         {
-            editor->OnUpdate(
-                Time::GetDeltaTime());
+            editor->OnUpdate(deltaTime);
         }
-
 
         if (game)
         {
-            game->OnUpdate(
-                Time::GetDeltaTime());
+            game->OnUpdate(deltaTime);
         }
 
         m_ImGuiLayer.Begin();
@@ -156,12 +146,6 @@ void Application::OnEvent(Event& event)
 
 bool Application::OnWindowResize(WindowResizeEvent& event)
 {
-    /* std::cout
-        << "Resize: "
-        << event.GetWidth()
-        << " x "
-        << event.GetHeight()
-        << '\n'; */
 
     return true;
 }
@@ -182,10 +166,6 @@ void Application::PushLayer(
 
 void Application::PushOverlay(Layer* layer)
 {
-    std::cout << "PushOverlay: "
-              << layer->GetName()
-              << '\n';
-
     m_LayerStack.PushOverlay(layer);
 }
 

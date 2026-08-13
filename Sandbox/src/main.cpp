@@ -9,8 +9,6 @@ int main()
     auto* gameLayer = new AtlasEngine::GameLayer();
     auto* editorLayer = new AtlasEngine::EditorLayer();
 
-    gameLayer->SetEditor(editorLayer);
-
     app.PushLayer(gameLayer);
     app.PushOverlay(editorLayer);
 

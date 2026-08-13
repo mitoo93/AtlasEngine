@@ -40,9 +40,7 @@ public:
 
         auto component =
             std::make_unique<T>(
-                std::forward<Args>(args)...);
-
-        component->SetEntity(this);
+                std::forward<Args>(args)...);;
 
         T* ptr = component.get();
 

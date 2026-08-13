@@ -1,6 +1,3 @@
-#include <iostream>
-#include <cstring>
-
 #include "AtlasEngine/Controllers/CameraController.h"
 
 #include "AtlasEngine/Core/Input.h"
@@ -111,11 +108,6 @@ void CameraController::Update(
 void CameraController::SetMoveSpeed(float speed)
 {
     m_MoveSpeed = speed;
-}
-
-void CameraController::SetRotationSpeed(float speed)
-{
-    m_RotationSpeed = speed;
 }
 
 void CameraController::SetMouseSensitivity(float sensitivity)

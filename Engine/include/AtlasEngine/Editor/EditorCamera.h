@@ -16,7 +16,6 @@ public:
     void Update(
         float deltaTime,
         bool allowInput,
-        bool allowMovement,
         bool allowRotation);
 
     void SetViewportSize(
@@ -32,10 +31,6 @@ public:
         return m_Position;
     }
 
-    const Vector3& GetRotation() const
-    {
-        return m_Rotation;
-    }
 
     Vector3 GetForward() const;
     Vector3 GetRight() const;

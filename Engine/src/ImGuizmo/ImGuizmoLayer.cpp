@@ -52,8 +52,6 @@ void ImGuizmoLayer::OnImGuiRender(
     const ImVec2& viewportPosition,
     const ImVec2& viewportSize)
 {
-    m_WasUsing =
-        m_IsUsing;
 
     m_IsUsing =
         false;
@@ -97,19 +95,6 @@ void ImGuizmoLayer::OnImGuiRender(
     m_IsOver =
         ImGuizmo::IsOver();
 }
-
-
-void ImGuizmoLayer::OnMiniGizmoRender(
-    Entity* selectedEntity,
-    const EditorCamera& camera,
-    GizmoMode gizmoMode,
-    GizmoSpace gizmoSpace,
-    const ImVec2& position,
-    const ImVec2& size)
-{
-    // Se implementará posteriormente.
-}
-
 
 void ImGuizmoLayer::Manipulate(
     Entity* selectedEntity,
@@ -221,12 +206,6 @@ void ImGuizmoLayer::Manipulate(
 bool ImGuizmoLayer::IsUsing() const
 {
     return m_IsUsing;
-}
-
-
-bool ImGuizmoLayer::WasUsing() const
-{
-    return m_WasUsing;
 }
 
 

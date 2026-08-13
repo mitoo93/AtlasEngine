@@ -88,16 +88,6 @@ Matrix4 Transform::GetLocalMatrix() const
             m_Scale.z);
 }
 
-const std::vector<Transform*>& Transform::GetChildren() const
-{
-    return m_Children;
-}
-
-std::size_t Transform::GetChildCount() const
-{
-    return m_Children.size();
-}
-
 Matrix4 Transform::GetWorldMatrix() const
 {
     if (m_Parent)

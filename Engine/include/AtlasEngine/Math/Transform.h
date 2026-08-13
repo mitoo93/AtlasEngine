@@ -32,8 +32,6 @@ public:
     const Vector3& GetScale() const;
 
     Transform* GetParent() const;
-    const std::vector<Transform*>& GetChildren() const;
-    std::size_t GetChildCount() const;
 
     // Matrices
     Matrix4 GetLocalMatrix() const;

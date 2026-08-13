@@ -16,13 +16,11 @@ public:
         float deltaTime);
 
     void SetMoveSpeed(float speed);
-    void SetRotationSpeed(float speed);
     void SetMouseSensitivity(float sensitivity);
 
 private:
 
     float m_MoveSpeed = 2.0f;
-    float m_RotationSpeed = 90.0f;
     
     float m_MouseSensitivity = 0.1f;
     bool m_FirstMouseUpdate = true;

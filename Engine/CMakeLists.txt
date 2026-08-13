@@ -4,7 +4,6 @@ add_library(Engine STATIC
     src/Core/Window.cpp
     src/Core/Input.cpp
     src/Core/Time.cpp
-    src/Core/Log.cpp
 
     src/Renderer/Renderer.cpp
     src/Renderer/RenderCommand.cpp

@@ -144,16 +144,6 @@
         return m_Data.Handle;
     }
 
-    void Window::SetCursorEnabled(bool enabled)
-    {
-        glfwSetInputMode(
-            m_Data.Handle,
-            GLFW_CURSOR,
-            enabled
-                ? GLFW_CURSOR_NORMAL
-                : GLFW_CURSOR_DISABLED);
-    }
-
     void Window::SetEventCallback(
         const EventCallbackFn& callback)
     {

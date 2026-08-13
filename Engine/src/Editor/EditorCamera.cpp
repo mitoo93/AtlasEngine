@@ -36,7 +36,6 @@ EditorCamera::EditorCamera()
 void EditorCamera::Update(
     float deltaTime,
     bool allowInput,
-    bool allowMovement,
     bool allowRotation)
 {
     if (!allowInput)
@@ -115,115 +114,65 @@ void EditorCamera::Update(
         }
     }
 
-    std::cout
-        << "W=" << Input::IsKeyDown(Key::W)
-        << " S=" << Input::IsKeyDown(Key::S)
-        << " A=" << Input::IsKeyDown(Key::A)
-        << " D=" << Input::IsKeyDown(Key::D)
-        << " Q=" << Input::IsKeyDown(Key::Q)
-        << " E=" << Input::IsKeyDown(Key::E)
-        << "\n";
-
-
     // ----------------------------------------------------
     // MOVEMENT
     // ----------------------------------------------------
 
-    std::cout
-        << "CAMERA INPUT - allowInput: "
-        << allowInput
-        << " allowMovement: "
-        << allowMovement
-        << " RMB: "
-        << Input::IsMouseButtonDown(MouseButton::Right)
-        << "\n";
-    
-    if (allowMovement)
+    Vector3 movementDirection;
+
+    if (Input::IsKeyDown(Key::W))
     {
-         std::cout
-            << "W=" << Input::IsKeyDown(Key::W)
-            << " S=" << Input::IsKeyDown(Key::S)
-            << " A=" << Input::IsKeyDown(Key::A)
-            << " D=" << Input::IsKeyDown(Key::D)
-            << " Q=" << Input::IsKeyDown(Key::Q)
-            << " E=" << Input::IsKeyDown(Key::E)
-            << " dt=" << deltaTime
-            << "\n";
-
-        const float movement =
-            m_MoveSpeed * deltaTime;
+        movementDirection +=
+            GetForward();
+    }
 
 
-        Vector3 movementDirection;
-
-        std::cout
-            << "MOVEMENT DIR: "
-            << movementDirection.x << " "
-            << movementDirection.y << " "
-            << movementDirection.z
-            << "\n";
+    if (Input::IsKeyDown(Key::S))
+    {
+        movementDirection -=
+            GetForward();
+    }
 
 
-        if (Input::IsKeyDown(Key::W))
-        {
-            movementDirection +=
-                GetForward();
-        }
+    if (Input::IsKeyDown(Key::D))
+    {
+        movementDirection +=
+            GetRight();
+    }
 
 
-        if (Input::IsKeyDown(Key::S))
-        {
-            movementDirection -=
-                GetForward();
-        }
+    if (Input::IsKeyDown(Key::A))
+    {
+        movementDirection -=
+            GetRight();
+    }
 
 
-        if (Input::IsKeyDown(Key::D))
-        {
-            movementDirection +=
-                GetRight();
-        }
+    if (Input::IsKeyDown(Key::Q))
+    {
+        movementDirection +=
+            GetUp();
+    }
 
 
-        if (Input::IsKeyDown(Key::A))
-        {
-            movementDirection -=
-                GetRight();
-        }
+    if (Input::IsKeyDown(Key::E))
+    {
+        movementDirection -=
+            GetUp();
+    }
 
 
-        if (Input::IsKeyDown(Key::Q))
-        {
-            movementDirection +=
-                GetUp();
-        }
+    if (movementDirection.Length() > 0.0f)
+    {
+        movementDirection =
+            movementDirection.Normalized();
 
 
-        if (Input::IsKeyDown(Key::E))
-        {
-            movementDirection -=
-                GetUp();
-        }
+        m_Position +=
+            movementDirection *
+            m_MoveSpeed *
+            deltaTime;
 
-
-        if (movementDirection.Length() > 0.0f)
-        {
-            movementDirection =
-                movementDirection.Normalized();
-
-
-            m_Position +=
-                movementDirection *
-                m_MoveSpeed *
-                deltaTime;
-
-            std::cout
-                << "MOVEMENT DIR: "
-                << movementDirection.x << " "
-                << movementDirection.y << " "
-                << movementDirection.z
-                << "\n";
-        }
     }
 }
 
@@ -250,8 +199,6 @@ Matrix4 EditorCamera::GetViewMatrix() const
         Matrix4::RotateX(-m_Rotation.x)
         *
         Matrix4::RotateY(m_Rotation.y)
-        *
-        Matrix4::RotateZ(-m_Rotation.z)
         *
         Matrix4::Translate(
             -m_Position.x,
@@ -387,40 +334,6 @@ void EditorCamera::Focus(
 
     m_Rotation.x =
         Math::ToDegrees(pitch);
-
-    Vector3 forward = GetForward();
-
-    std::cout
-        << "FOCUS rotation: "
-        << m_Rotation.x << ", "
-        << m_Rotation.y << ", "
-        << m_Rotation.z
-        << "\n";
-
-    std::cout
-        << "FOCUS forward: "
-        << forward.x << ", "
-        << forward.y << ", "
-        << forward.z
-        << "\n";
-
-    std::cout
-        << "FOCUS target: "
-        << target.x << ", "
-        << target.y << ", "
-        << target.z
-        << "\n";
-
-    Vector3 toTarget =
-        (target - m_Position).Normalized();
-
-    std::cout
-        << "FOCUS toTarget: "
-        << toTarget.x << ", "
-        << toTarget.y << ", "
-        << toTarget.z
-        << "\n";
-
 
     ResetMouseState();
 }

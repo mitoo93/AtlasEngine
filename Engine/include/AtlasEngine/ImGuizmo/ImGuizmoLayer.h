@@ -25,19 +25,7 @@ public:
         const ImVec2& viewportPosition,
         const ImVec2& viewportSize);
 
-
-    void OnMiniGizmoRender(
-        Entity* selectedEntity,
-        const EditorCamera& camera,
-        GizmoMode gizmoMode,
-        GizmoSpace gizmoSpace,
-        const ImVec2& position,
-        const ImVec2& size);
-
-
     bool IsUsing() const;
-
-    bool WasUsing() const;
 
     bool IsOver() const;
 
@@ -52,10 +40,6 @@ private:
 
 
     bool m_IsUsing =
-        false;
-
-
-    bool m_WasUsing =
         false;
 
 

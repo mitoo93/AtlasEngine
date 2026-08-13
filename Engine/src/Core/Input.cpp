@@ -1,7 +1,6 @@
 #include <GLFW/glfw3.h>
 
 #include "AtlasEngine/Core/Input.h"
-#include <iostream>
 
 namespace AtlasEngine
 {
@@ -11,7 +10,7 @@ void* Input::s_NativeWindow = nullptr;
 namespace
 {
 
-constexpr int KeyCount = 19;
+constexpr int KeyCount = 18;
 
 constexpr Key Keys[KeyCount]
 {
@@ -25,7 +24,6 @@ constexpr Key Keys[KeyCount]
 
     Key::Q,
     Key::E,
-    Key::R,
     Key::X,
 
     Key::T,
@@ -60,7 +58,6 @@ int ToGLFWKey(Key key)
 
         case Key::Q: return GLFW_KEY_Q;
         case Key::E: return GLFW_KEY_E;
-        case Key::R: return GLFW_KEY_R;
         case Key::X: return GLFW_KEY_X;
 
         case Key::T: return GLFW_KEY_T;
@@ -90,23 +87,6 @@ int ToKeyIndex(Key key)
     return -1;
 }
 
-int ToGLFWMouseButton(MouseButton button)
-{
-    switch (button)
-    {
-        case MouseButton::Left:
-            return GLFW_MOUSE_BUTTON_LEFT;
-
-        case MouseButton::Right:
-            return GLFW_MOUSE_BUTTON_RIGHT;
-
-        case MouseButton::Middle:
-            return GLFW_MOUSE_BUTTON_MIDDLE;
-    }
-
-    return GLFW_MOUSE_BUTTON_LEFT;
-}
-
 }
 
 void Input::SetNativeWindow(void* window)
@@ -121,8 +101,6 @@ void Input::Update()
 
     if (!window)
         return;
-
-    glfwPollEvents(); // TEMPORALMENTE AQUÍ PARA PROBAR
 
     // ----------------------------------------------------
     // KEYS
@@ -162,16 +140,6 @@ void Input::Update()
             == GLFW_PRESS;
     }
 
-    std::cout
-        << "GLFW W: "
-        << glfwGetKey(window, GLFW_KEY_W)
-        << " | GLFW A: "
-        << glfwGetKey(window, GLFW_KEY_A)
-        << " | GLFW S: "
-        << glfwGetKey(window, GLFW_KEY_S)
-        << " | GLFW D: "
-        << glfwGetKey(window, GLFW_KEY_D)
-        << "\n";
 }
 
 bool Input::IsKeyDown(Key key)

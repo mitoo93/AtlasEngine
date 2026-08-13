@@ -73,25 +73,6 @@ public:
         return m_ViewportSize;
     }
 
-
-    bool IsViewportFocused() const
-    {
-        return m_ViewportFocused;
-    }
-
-
-    bool IsViewportHovered() const
-    {
-        return m_ViewportHovered;
-    }
-
-
-    const ImVec2& GetViewportPosition() const
-    {
-        return m_ViewportPosition;
-    }
-
-
     const EditorCamera& GetEditorCamera() const
     {
         return m_EditorCamera;
@@ -125,10 +106,6 @@ private:
         0.0f
     };
 
-
-    bool m_ViewportFocused =
-        false;
-
     bool m_ViewportHovered =
         false;
 
@@ -150,8 +127,6 @@ private:
 
     bool m_CameraRotationEnabled =
         true;
-
-    float m_DeltaTime = 0.0f;
 };
 
 }
