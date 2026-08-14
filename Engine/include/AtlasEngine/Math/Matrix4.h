@@ -1,4 +1,5 @@
 #pragma once
+#include "AtlasEngine/Math/Vector3.h"
 
 namespace AtlasEngine
 {
@@ -46,6 +47,9 @@ public:
 
     float* Data();
     const float* Data() const;
+
+    Vector3 TransformPoint(
+        const Vector3& point) const;
 
 private:
 

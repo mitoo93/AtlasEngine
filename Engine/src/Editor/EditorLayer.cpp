@@ -1,6 +1,7 @@
 #include "AtlasEngine/Editor/EditorLayer.h"
 
 #include "AtlasEngine/Scene/Scene.h"
+#include "AtlasEngine/Scene/MeshRendererComponent.h"
 #include "AtlasEngine/Math/Transform.h"
 #include "AtlasEngine/Core/Input.h"
 #include "AtlasEngine/Core/Key.h"
@@ -8,6 +9,8 @@
 
 #include <imgui.h>
 #include <iostream>
+#include <cmath>
+#include <algorithm>
 
 namespace AtlasEngine
 {
@@ -123,6 +126,46 @@ void EditorLayer::OnUpdate(float deltaTime)
         allowCamera,
         m_CameraRotationEnabled);
 
+    // ----------------------------------------------------
+    // PICKING
+    // ----------------------------------------------------
+
+    if (m_ViewportHovered &&
+        Input::IsMouseButtonPressed(MouseButton::Left) &&
+        !m_GizmoLayer.IsOver() &&
+        !m_GizmoLayer.IsUsing())
+    {
+        Vector2 mousePosition =
+            Input::GetMousePosition();
+
+        float mouseX =
+            mousePosition.x -
+            m_ViewportPosition.x;
+
+        float mouseY =
+            mousePosition.y -
+            m_ViewportPosition.y;
+
+        if (mouseX >= 0.0f &&
+            mouseX <= m_ViewportSize.x &&
+            mouseY >= 0.0f &&
+            mouseY <= m_ViewportSize.y)
+        {
+            Ray ray =
+                m_EditorCamera.ScreenPointToRay(
+                    mouseX,
+                    mouseY,
+                    m_ViewportSize.x,
+                    m_ViewportSize.y);
+
+            Entity* pickedEntity =
+                PickEntity(ray);
+
+            m_SelectedEntity =
+                pickedEntity;
+        }
+    }
+
 }
 
 void EditorLayer::OnDetach()
@@ -133,14 +176,6 @@ void EditorLayer::OnDetach()
 
 void EditorLayer::OnImGuiRender()
 {
-    if (!m_SelectedEntity &&
-        m_Context &&
-        !m_Context->GetEntities().empty())
-    {
-        m_SelectedEntity =
-            m_Context->GetEntities().front().get();
-    }
-
 
     // ----------------------------------------------------
     // LAYOUT
@@ -508,6 +543,233 @@ void EditorLayer::OnImGuiRender()
 void EditorLayer::SetContext(Scene* scene)
 {
     m_Context = scene;
+}
+
+bool EditorLayer::RayIntersectsAABB(
+    const Ray& ray,
+    const Vector3& boundsMin,
+    const Vector3& boundsMax,
+    float& distance) const
+{
+    float tMin = 0.0f;
+    float tMax = 100000.0f;
+
+    const float origin[3] =
+    {
+        ray.origin.x,
+        ray.origin.y,
+        ray.origin.z
+    };
+
+    const float direction[3] =
+    {
+        ray.direction.x,
+        ray.direction.y,
+        ray.direction.z
+    };
+
+    const float minBounds[3] =
+    {
+        boundsMin.x,
+        boundsMin.y,
+        boundsMin.z
+    };
+
+    const float maxBounds[3] =
+    {
+        boundsMax.x,
+        boundsMax.y,
+        boundsMax.z
+    };
+
+    for (int i = 0; i < 3; ++i)
+    {
+        if (std::fabs(direction[i]) < 0.000001f)
+        {
+            if (origin[i] < minBounds[i] ||
+                origin[i] > maxBounds[i])
+            {
+                return false;
+            }
+
+            continue;
+        }
+
+        float inverseDirection =
+            1.0f / direction[i];
+
+        float t1 =
+            (minBounds[i] - origin[i]) *
+            inverseDirection;
+
+        float t2 =
+            (maxBounds[i] - origin[i]) *
+            inverseDirection;
+
+        if (t1 > t2)
+        {
+            std::swap(t1, t2);
+        }
+
+        if (t1 > tMin)
+        {
+            tMin = t1;
+        }
+
+        if (t2 < tMax)
+        {
+            tMax = t2;
+        }
+
+        if (tMin > tMax)
+        {
+            return false;
+        }
+    }
+
+    distance = tMin;
+
+    return true;
+}
+
+Entity* EditorLayer::PickEntity(
+    const Ray& ray) const
+{
+    if (!m_Context)
+    {
+        return nullptr;
+    }
+
+
+    Entity* closestEntity = nullptr;
+
+    float closestDistance =
+        1000000.0f;
+
+
+    for (const auto& entity : m_Context->GetEntities())
+    {
+        if (!entity)
+        {
+            continue;
+        }
+
+        if (!entity->HasComponent<MeshRendererComponent>())
+        {
+            continue;
+        }
+
+        const Matrix4 worldMatrix =
+            entity->GetTransform().GetWorldMatrix();
+
+
+        const Vector3 localMin
+        {
+            -0.5f,
+            -0.5f,
+            -0.5f
+        };
+
+
+        const Vector3 localMax
+        {
+            0.5f,
+            0.5f,
+            0.5f
+        };
+
+
+        Vector3 corners[8]
+        {
+            { localMin.x, localMin.y, localMin.z },
+            { localMax.x, localMin.y, localMin.z },
+            { localMin.x, localMax.y, localMin.z },
+            { localMax.x, localMax.y, localMin.z },
+
+            { localMin.x, localMin.y, localMax.z },
+            { localMax.x, localMin.y, localMax.z },
+            { localMin.x, localMax.y, localMax.z },
+            { localMax.x, localMax.y, localMax.z }
+        };
+
+
+        Vector3 worldMin
+        {
+            1000000.0f,
+            1000000.0f,
+            1000000.0f
+        };
+
+
+        Vector3 worldMax
+        {
+            -1000000.0f,
+            -1000000.0f,
+            -1000000.0f
+        };
+
+
+        for (const Vector3& corner : corners)
+        {
+            Vector3 worldCorner =
+                worldMatrix.TransformPoint(corner);
+
+
+            worldMin.x =
+                std::min(
+                    worldMin.x,
+                    worldCorner.x);
+
+            worldMin.y =
+                std::min(
+                    worldMin.y,
+                    worldCorner.y);
+
+            worldMin.z =
+                std::min(
+                    worldMin.z,
+                    worldCorner.z);
+
+
+            worldMax.x =
+                std::max(
+                    worldMax.x,
+                    worldCorner.x);
+
+            worldMax.y =
+                std::max(
+                    worldMax.y,
+                    worldCorner.y);
+
+            worldMax.z =
+                std::max(
+                    worldMax.z,
+                    worldCorner.z);
+        }
+
+
+        float distance = 0.0f;
+
+
+        if (RayIntersectsAABB(
+                ray,
+                worldMin,
+                worldMax,
+                distance))
+        {
+            if (distance < closestDistance)
+            {
+                closestDistance =
+                    distance;
+
+                closestEntity =
+                    entity.get();
+            }
+        }
+    }
+
+
+    return closestEntity;
 }
 
 }

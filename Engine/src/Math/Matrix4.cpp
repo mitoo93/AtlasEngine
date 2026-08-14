@@ -366,4 +366,46 @@ const float* Matrix4::Data() const
     return m_Values;
 }
 
+Vector3 Matrix4::TransformPoint(
+    const Vector3& point) const
+{
+    float x =
+        m_Values[0] * point.x +
+        m_Values[4] * point.y +
+        m_Values[8] * point.z +
+        m_Values[12];
+
+    float y =
+        m_Values[1] * point.x +
+        m_Values[5] * point.y +
+        m_Values[9] * point.z +
+        m_Values[13];
+
+    float z =
+        m_Values[2] * point.x +
+        m_Values[6] * point.y +
+        m_Values[10] * point.z +
+        m_Values[14];
+
+    float w =
+        m_Values[3] * point.x +
+        m_Values[7] * point.y +
+        m_Values[11] * point.z +
+        m_Values[15];
+
+    if (std::fabs(w) > 0.000001f)
+    {
+        x /= w;
+        y /= w;
+        z /= w;
+    }
+
+    return
+    {
+        x,
+        y,
+        z
+    };
+}
+
 }

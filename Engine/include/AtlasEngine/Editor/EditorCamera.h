@@ -3,6 +3,7 @@
 #include "AtlasEngine/Math/Vector2.h"
 #include "AtlasEngine/Math/Vector3.h"
 #include "AtlasEngine/Math/Matrix4.h"
+#include "AtlasEngine/Math/Ray.h"
 
 namespace AtlasEngine
 {
@@ -41,6 +42,12 @@ public:
         float distance = 5.0f);
 
     void ResetMouseState();
+
+    Ray ScreenPointToRay(
+        float mouseX,
+        float mouseY,
+        float viewportWidth,
+        float viewportHeight) const;
 
 private:
 

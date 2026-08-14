@@ -347,5 +347,68 @@ void EditorCamera::ResetMouseState()
         Input::GetMousePosition();
 }
 
+Ray EditorCamera::ScreenPointToRay(
+    float mouseX,
+    float mouseY,
+    float viewportWidth,
+    float viewportHeight) const
+{
+    if (viewportWidth <= 0.0f ||
+        viewportHeight <= 0.0f)
+    {
+        return
+        {
+            GetPosition(),
+            GetForward()
+        };
+    }
+    
+    float ndcX =
+        (mouseX / viewportWidth) * 2.0f - 1.0f;
+
+    float ndcY =
+        1.0f -
+        (mouseY / viewportHeight) * 2.0f;
+
+    Vector3 nearPoint =
+        {
+            ndcX,
+            ndcY,
+            -1.0f
+        };
+
+    Vector3 farPoint =
+        {
+            ndcX,
+            ndcY,
+            1.0f
+        };
+
+    Matrix4 viewProjection =
+        GetProjectionMatrix() *
+        GetViewMatrix();
+
+    Matrix4 inverseViewProjection =
+        viewProjection.Inverse();
+
+    nearPoint =
+        inverseViewProjection.TransformPoint(
+            nearPoint);
+
+    farPoint =
+        inverseViewProjection.TransformPoint(
+            farPoint);
+
+    Ray ray;
+
+    ray.origin =
+        nearPoint;
+
+    ray.direction =
+        (farPoint - nearPoint).Normalized();
+
+    return ray;
+}
+
 
 } // namespace AtlasEngine

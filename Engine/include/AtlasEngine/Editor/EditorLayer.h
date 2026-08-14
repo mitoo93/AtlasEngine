@@ -127,6 +127,16 @@ private:
 
     bool m_CameraRotationEnabled =
         true;
+
+    bool RayIntersectsAABB(
+        const Ray& ray,
+        const Vector3& min,
+        const Vector3& max,
+        float& distance) const;
+
+
+    Entity* PickEntity(
+        const Ray& ray) const;
 };
 
 }
