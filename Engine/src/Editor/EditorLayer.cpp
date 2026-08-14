@@ -185,6 +185,7 @@ void EditorLayer::OnImGuiRender()
     const float hierarchyWidth = 250.0f;
     const float inspectorWidth = 320.0f;
     const float statsHeight = 120.0f;
+    const float assetBrowserHeight = 220.0f;
 
     ImVec2 display =
         ImGui::GetIO().DisplaySize;
@@ -376,6 +377,22 @@ void EditorLayer::OnImGuiRender()
         ImVec2(0, 1),
         ImVec2(1, 0));
 
+    if (ImGui::BeginDragDropTarget())
+    {
+        if (const ImGuiPayload* payload =
+                ImGui::AcceptDragDropPayload("ASSET_PATH"))
+        {
+            const char* assetPath =
+                static_cast<const char*>(payload->Data);
+
+            // Pendiente de implementar la accion
+            // segun el tipo de asset.
+            (void)assetPath;
+        }
+
+        ImGui::EndDragDropTarget();
+    }
+
     m_GizmoLayer.OnImGuiRender(
         m_SelectedEntity,
         m_EditorCamera,
@@ -400,7 +417,8 @@ void EditorLayer::OnImGuiRender()
         ImVec2(
             hierarchyWidth,
             display.y -
-                toolbarHeight),
+            toolbarHeight -
+            assetBrowserHeight),
         ImGuiCond_Always);
 
     ImGui::Begin("Scene Hierarchy");
@@ -508,6 +526,26 @@ void EditorLayer::OnImGuiRender()
     }
 
     ImGui::End();
+
+    // ----------------------------------------------------
+    // ASSET BROWSER
+    // ----------------------------------------------------
+
+    ImGui::SetNextWindowPos(
+        ImVec2(
+            0.0f,
+            toolbarHeight +
+            (display.y - toolbarHeight) -
+            assetBrowserHeight),
+        ImGuiCond_Always);
+
+    ImGui::SetNextWindowSize(
+        ImVec2(
+            hierarchyWidth,
+            assetBrowserHeight),
+        ImGuiCond_Always);
+
+    m_AssetBrowser.OnImGuiRender();
 
     // ----------------------------------------------------
     // STATISTICS

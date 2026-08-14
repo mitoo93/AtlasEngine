@@ -5,6 +5,7 @@
 #include "AtlasEngine/Editor/EditorCamera.h"
 #include "AtlasEngine/Editor/GizmoMode.h"
 #include "AtlasEngine/Editor/GizmoSpace.h"
+#include "AtlasEngine/Editor/AssetBrowser.h"
 
 #include <imgui.h>
 
@@ -137,6 +138,8 @@ private:
 
     Entity* PickEntity(
         const Ray& ray) const;
+
+    AssetBrowser m_AssetBrowser;
 };
 
 }

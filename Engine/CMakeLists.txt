@@ -44,6 +44,7 @@ add_library(Engine STATIC
 
     src/Editor/EditorCamera.cpp
     
+    src/Editor/AssetBrowser.cpp
 )
 
 target_include_directories(Engine
