@@ -2,6 +2,7 @@
 
 #include "AtlasEngine/Renderer/Shader.h"
 #include "AtlasEngine/Renderer/Material.h"
+#include "AtlasEngine/Renderer/Texture.h"
 
 #include "AtlasEngine/Scene/Scene.h"
 #include "AtlasEngine/Scene/MeshRendererComponent.h"
@@ -114,6 +115,18 @@ void RenderSystem::Update(
         entityShader->SetMatrix4(
             "u_Projection",
             projection);
+
+        Texture* texture =
+            material->GetTexture();
+
+        if (texture)
+        {
+            texture->Bind(0);
+
+            entityShader->SetInt(
+                "u_Texture",
+                0);
+        }
 
 
         mesh->Draw();

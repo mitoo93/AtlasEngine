@@ -3,6 +3,7 @@
 #include "AtlasEngine/Renderer/Shader.h"
 #include "AtlasEngine/Renderer/Material.h"
 #include "AtlasEngine/Renderer/Mesh.h"
+#include "AtlasEngine/Renderer/Texture.h"
 
 namespace AtlasEngine
 {
@@ -21,6 +22,11 @@ std::unordered_map<
     std::string,
     std::unique_ptr<Mesh>>
 AssetManager::s_Meshes;
+
+std::unordered_map<
+    std::string,
+    std::unique_ptr<Texture>>
+AssetManager::s_Textures;
 
 bool AssetManager::LoadShader(
     const std::string& name,
@@ -122,6 +128,45 @@ Mesh* AssetManager::GetMesh(
         s_Meshes.find(name);
 
     if (it == s_Meshes.end())
+    {
+        return nullptr;
+    }
+
+    return it->second.get();
+}
+
+bool AssetManager::LoadTexture(
+    const std::string& name,
+    const std::string& path)
+{
+    if (s_Textures.find(name) != s_Textures.end())
+    {
+        return true;
+    }
+
+    auto texture =
+        std::make_unique<Texture>();
+
+    if (!texture->Load(path))
+    {
+        return false;
+    }
+
+    texture->SetName(name);
+
+    s_Textures[name] =
+        std::move(texture);
+
+    return true;
+}
+
+Texture* AssetManager::GetTexture(
+    const std::string& name)
+{
+    auto it =
+        s_Textures.find(name);
+
+    if (it == s_Textures.end())
     {
         return nullptr;
     }

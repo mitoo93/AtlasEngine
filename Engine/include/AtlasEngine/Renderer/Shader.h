@@ -25,8 +25,12 @@ public:
     void Unbind() const;
 
     void SetMatrix4(
-    const std::string& name,
-    const Matrix4& matrix) const;
+        const std::string& name,
+        const Matrix4& matrix) const;
+
+    void SetInt(
+        const std::string& name,
+        int value) const;
 
 private:
 

@@ -6,6 +6,8 @@
 
 #include "AtlasEngine/Renderer/Renderer.h"
 #include "AtlasEngine/Renderer/MeshFactory.h"
+#include "AtlasEngine/Renderer/Texture.h"
+#include "AtlasEngine/Renderer/Material.h"
 
 #include "AtlasEngine/Assets/AssetManager.h"
 
@@ -39,9 +41,26 @@ void GameLayer::OnAttach()
         "Assets/Shaders/Basic.vert",
         "Assets/Shaders/Basic.frag");
 
+    AssetManager::LoadTexture(
+        "Test",
+        "Assets/Textures/Test.png");
+
+    AssetManager::LoadTexture(
+        "Test2",
+        "Assets/Textures/Test2.png");
+
     AssetManager::LoadMaterial(
         "Default",
         AssetManager::GetShader("Basic"));
+
+    Material* defaultMaterial =
+        AssetManager::GetMaterial("Default");
+
+    if (defaultMaterial)
+    {
+        defaultMaterial->SetTexture(
+            AssetManager::GetTexture("Test2"));
+    }
 
     AssetManager::LoadMesh(
         "Quad",

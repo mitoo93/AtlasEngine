@@ -4,6 +4,8 @@ add_library(Engine STATIC
     src/Core/Window.cpp
     src/Core/Input.cpp
     src/Core/Time.cpp
+    src/Core/Layer.cpp
+    src/Core/LayerStack.cpp
 
     src/Renderer/Renderer.cpp
     src/Renderer/RenderCommand.cpp
@@ -15,6 +17,8 @@ add_library(Engine STATIC
     src/Renderer/BufferLayout.cpp
     src/Renderer/MeshFactory.cpp
     src/Renderer/Camera.cpp
+    src/Renderer/Framebuffer.cpp
+    src/Renderer/Texture.cpp
     
     src/Math/Matrix4.cpp
     src/Math/Transform.cpp
@@ -31,20 +35,16 @@ add_library(Engine STATIC
 
     src/Serialization/SceneSerializer.cpp
 
-    src/Core/Layer.cpp
-    src/Core/LayerStack.cpp
     src/Gameplay/GameLayer.cpp
 
     src/Editor/EditorLayer.cpp
+    src/Editor/EditorCamera.cpp
+    src/Editor/AssetBrowser.cpp
 
     src/ImGui/ImGuiLayer.cpp
-
-    src/Renderer/Framebuffer.cpp
     src/ImGuizmo/ImGuizmoLayer.cpp
 
-    src/Editor/EditorCamera.cpp
     
-    src/Editor/AssetBrowser.cpp
 )
 
 target_include_directories(Engine
@@ -58,4 +58,5 @@ target_link_libraries(Engine
         glad
         imgui
         imguizmo
+        stb
 )

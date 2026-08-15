@@ -18,6 +18,8 @@ add_subdirectory(External/imgui)
 
 add_subdirectory(External/imguizmo)
 
+add_subdirectory(External/stb)
+
 add_subdirectory(Engine)
 
 add_subdirectory(Sandbox)

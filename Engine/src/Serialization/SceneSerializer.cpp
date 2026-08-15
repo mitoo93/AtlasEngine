@@ -16,6 +16,7 @@
 
 #include "AtlasEngine/Renderer/Mesh.h"
 #include "AtlasEngine/Renderer/Material.h"
+#include "AtlasEngine/Renderer/Texture.h"
 
 #include "AtlasEngine/Assets/AssetManager.h"
 
@@ -118,7 +119,19 @@ bool SceneSerializer::Save(
 
                 file << "Material="
                     << material->GetName()
-                    << "\n\n";
+                    << "\n";
+
+                const Texture* texture =
+                    material->GetTexture();
+
+                if (texture)
+                {
+                    file << "Texture="
+                        << texture->GetName()
+                        << "\n";
+                }
+
+                file << "\n";
             }
         }
 
@@ -212,14 +225,20 @@ bool SceneSerializer::Load(
             continue;
         }
 
-        if (line.rfind("Material=", 0) == 0 && currentEntity)
+        if (line.rfind("Texture=", 0) == 0 && currentEntity)
         {
             MaterialComponent& materialComponent =
                 currentEntity->GetComponent<MaterialComponent>();
 
-            materialComponent.SetMaterial(
-                AssetManager::GetMaterial(
-                    line.substr(9)));
+            Material* material =
+                materialComponent.GetMaterial();
+
+            if (material)
+            {
+                material->SetTexture(
+                    AssetManager::GetTexture(
+                        line.substr(8)));
+            }
 
             continue;
         }
