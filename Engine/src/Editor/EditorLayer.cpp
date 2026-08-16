@@ -2,15 +2,23 @@
 
 #include "AtlasEngine/Scene/Scene.h"
 #include "AtlasEngine/Scene/MeshRendererComponent.h"
+#include "AtlasEngine/Scene/ModelRendererComponent.h"
+#include "AtlasEngine/Scene/MaterialComponent.h"
 #include "AtlasEngine/Math/Transform.h"
 #include "AtlasEngine/Core/Input.h"
 #include "AtlasEngine/Core/Key.h"
 #include "AtlasEngine/Renderer/Renderer.h"
+#include "AtlasEngine/Renderer/Model.h"
+#include "AtlasEngine/Renderer/Mesh.h"
+#include "AtlasEngine/Renderer/Material.h"
+
+#include "AtlasEngine/Assets/AssetManager.h"
 
 #include <imgui.h>
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include <filesystem>
 
 namespace AtlasEngine
 {
@@ -385,9 +393,10 @@ void EditorLayer::OnImGuiRender()
             const char* assetPath =
                 static_cast<const char*>(payload->Data);
 
-            // Pendiente de implementar la accion
-            // segun el tipo de asset.
-            (void)assetPath;
+            if (assetPath)
+            {
+                HandleAssetDrop(assetPath);
+            }
         }
 
         ImGui::EndDragDropTarget();
@@ -692,7 +701,16 @@ Entity* EditorLayer::PickEntity(
             continue;
         }
 
-        if (!entity->HasComponent<MeshRendererComponent>())
+        const bool hasMeshRenderer =
+            entity->HasComponent<
+                MeshRendererComponent>();
+
+        const bool hasModelRenderer =
+            entity->HasComponent<
+                ModelRendererComponent>();
+
+        if (!hasMeshRenderer &&
+            !hasModelRenderer)
         {
             continue;
         }
@@ -701,20 +719,37 @@ Entity* EditorLayer::PickEntity(
             entity->GetTransform().GetWorldMatrix();
 
 
-        const Vector3 localMin
+        Vector3 localMin
         {
             -0.5f,
             -0.5f,
             -0.5f
         };
 
-
-        const Vector3 localMax
+        Vector3 localMax
         {
             0.5f,
             0.5f,
             0.5f
         };
+
+        if (entity->HasComponent<ModelRendererComponent>())
+        {
+            ModelRendererComponent& modelRenderer =
+                entity->GetComponent<ModelRendererComponent>();
+
+            Model* model =
+                modelRenderer.GetModel();
+
+            if (model)
+            {
+                localMin =
+                    model->GetBoundsMin();
+
+                localMax =
+                    model->GetBoundsMax();
+            }
+        }
 
 
         Vector3 corners[8]
@@ -808,6 +843,162 @@ Entity* EditorLayer::PickEntity(
 
 
     return closestEntity;
+}
+
+void EditorLayer::HandleAssetDrop(
+    const std::string& assetPath)
+{
+    std::filesystem::path path(assetPath);
+
+    if (!std::filesystem::exists(path))
+    {
+        std::cout
+            << "Asset no encontrado: "
+            << assetPath
+            << '\n';
+
+        return;
+    }
+
+    const std::string extension =
+        path.extension().string();
+
+    if (extension != ".obj" &&
+        extension != ".gltf" &&
+        extension != ".glb")
+    {
+        std::cout
+            << "Asset no soportado para Model Drag & Drop: "
+            << assetPath
+            << '\n';
+
+        return;
+    }
+
+    if (!m_Context)
+        return;
+
+    // ----------------------------------------------------
+    // MODEL ASSET NAME
+    // ----------------------------------------------------
+
+    const std::string modelName =
+        path.stem().string();
+
+    // ----------------------------------------------------
+    // LOAD MODEL ONLY IF IT DOES NOT EXIST
+    // ----------------------------------------------------
+
+    Model* model =
+        AssetManager::GetModel(modelName);
+
+    if (!model)
+    {
+        if (!AssetManager::LoadModel(
+                modelName,
+                assetPath))
+        {
+            std::cout
+                << "ERROR: no se pudo importar modelo: "
+                << assetPath
+                << '\n';
+
+            return;
+        }
+
+        model =
+            AssetManager::GetModel(modelName);
+    }
+
+    if (!model)
+    {
+        std::cout
+            << "ERROR: modelo no disponible: "
+            << modelName
+            << '\n';
+
+        return;
+    }
+
+    // ----------------------------------------------------
+    // UNIQUE ENTITY NAME
+    // ----------------------------------------------------
+
+    std::string entityName =
+        modelName;
+
+    int suffix = 1;
+
+    while (true)
+    {
+        bool exists = false;
+
+        for (const auto& existingEntity :
+             m_Context->GetEntities())
+        {
+            if (existingEntity &&
+                existingEntity->GetName() ==
+                    entityName)
+            {
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists)
+            break;
+
+        entityName =
+            modelName +
+            "_" +
+            std::to_string(suffix++);
+    }
+
+    // ----------------------------------------------------
+    // CREATE ENTITY
+    // ----------------------------------------------------
+
+    Entity& entity =
+        m_Context->CreateEntity(
+            entityName);
+
+    entity.AddComponent<
+        ModelRendererComponent>();
+
+    entity.AddComponent<
+        MaterialComponent>();
+
+    entity.GetComponent<
+        ModelRendererComponent>()
+        .SetModel(model);
+
+    // ----------------------------------------------------
+    // MATERIAL
+    // ----------------------------------------------------
+
+    Material* material =
+        model->GetMeshes().empty()
+            ? nullptr
+            : model->GetMeshes()[0]->GetMaterial();
+
+    if (material)
+    {
+        entity.GetComponent<
+            MaterialComponent>()
+            .SetMaterial(material);
+    }
+
+    // ----------------------------------------------------
+    // SELECT
+    // ----------------------------------------------------
+
+    m_SelectedEntity =
+        &entity;
+
+    std::cout
+        << "Modelo añadido a la escena: "
+        << entityName
+        << '\n';
 }
 
 }

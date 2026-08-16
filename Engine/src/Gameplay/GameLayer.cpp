@@ -8,12 +8,14 @@
 #include "AtlasEngine/Renderer/MeshFactory.h"
 #include "AtlasEngine/Renderer/Texture.h"
 #include "AtlasEngine/Renderer/Material.h"
+#include "AtlasEngine/Renderer/Model.h"
 
 #include "AtlasEngine/Assets/AssetManager.h"
 
 #include "AtlasEngine/Serialization/SceneSerializer.h"
 
 #include "AtlasEngine/Scene/MeshRendererComponent.h"
+#include "AtlasEngine/Scene/ModelRendererComponent.h"
 #include "AtlasEngine/Scene/MaterialComponent.h"
 #include "AtlasEngine/Scene/CameraComponent.h"
 
@@ -49,6 +51,10 @@ void GameLayer::OnAttach()
         "Test2",
         "Assets/Textures/Test2.png");
 
+    AssetManager::LoadTexture(
+        "ModelTexture",
+        "Assets/Models/texture.png");
+
     AssetManager::LoadMaterial(
         "Default",
         AssetManager::GetShader("Basic"));
@@ -59,12 +65,38 @@ void GameLayer::OnAttach()
     if (defaultMaterial)
     {
         defaultMaterial->SetTexture(
-            AssetManager::GetTexture("Test2"));
+            AssetManager::GetTexture("ModelTexture"));
     }
 
     AssetManager::LoadMesh(
         "Quad",
         MeshFactory::CreateQuad());
+
+    AssetManager::LoadModel(
+        "CubeModel",
+        "Assets/Models/cube-tex.obj");
+
+    Model* model =
+        AssetManager::GetModel(
+            "CubeModel");
+
+    if (model)
+    {
+        std::cout
+            << "Modelo cargado desde AssetManager"
+            << '\n';
+
+        std::cout
+            << "Meshes: "
+            << model->GetMeshes().size()
+            << '\n';
+    }
+    else
+    {
+        std::cout
+            << "ERROR: no se pudo cargar CubeModel"
+            << '\n';
+    }
 
     if (SceneSerializer::Load(
         m_Scene,
@@ -123,7 +155,7 @@ void GameLayer::OnAttach()
         player.GetTransform().SetScale({
             0.5f,
             0.5f,
-            1.0f
+            0.5f
         });
 
         player.GetTransform().SetRotation({
@@ -132,14 +164,16 @@ void GameLayer::OnAttach()
             30.0f
         });
 
-        player.AddComponent<MeshRendererComponent>();
+        player.AddComponent<ModelRendererComponent>();
         player.AddComponent<MaterialComponent>();
 
-        player.GetComponent<MeshRendererComponent>()
-            .SetMesh(AssetManager::GetMesh("Quad"));
+        player.GetComponent<ModelRendererComponent>()
+            .SetModel(
+                AssetManager::GetModel("CubeModel"));
 
         player.GetComponent<MaterialComponent>()
-            .SetMaterial(AssetManager::GetMaterial("Default"));
+            .SetMaterial(
+                AssetManager::GetMaterial("Default"));
 
         //----------------------------------------------------
         // Enemy

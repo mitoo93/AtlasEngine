@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AtlasEngine/Math/Matrix4.h"
+#include "AtlasEngine/Math/Vector3.h"
 
 #include <string>
 
@@ -31,6 +32,14 @@ public:
     void SetInt(
         const std::string& name,
         int value) const;
+
+    void SetBool(
+        const std::string& name,
+        bool value) const;
+
+    void SetVector3(
+        const std::string& name,
+        const Vector3& value) const;
 
 private:
 

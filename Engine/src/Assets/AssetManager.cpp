@@ -1,9 +1,12 @@
 #include "AtlasEngine/Assets/AssetManager.h"
+#include "AtlasEngine/Assets/ModelImporter.h"
 
 #include "AtlasEngine/Renderer/Shader.h"
 #include "AtlasEngine/Renderer/Material.h"
 #include "AtlasEngine/Renderer/Mesh.h"
 #include "AtlasEngine/Renderer/Texture.h"
+#include "AtlasEngine/Renderer/Model.h"
+
 
 namespace AtlasEngine
 {
@@ -27,6 +30,11 @@ std::unordered_map<
     std::string,
     std::unique_ptr<Texture>>
 AssetManager::s_Textures;
+
+std::unordered_map<
+    std::string,
+    std::unique_ptr<Model>>
+AssetManager::s_Models;
 
 bool AssetManager::LoadShader(
     const std::string& name,
@@ -167,6 +175,43 @@ Texture* AssetManager::GetTexture(
         s_Textures.find(name);
 
     if (it == s_Textures.end())
+    {
+        return nullptr;
+    }
+
+    return it->second.get();
+}
+
+bool AssetManager::LoadModel(
+    const std::string& name,
+    const std::string& path)
+{
+    if (s_Models.find(name) != s_Models.end())
+    {
+        return true;
+    }
+
+    auto model =
+        ModelImporter::Import(path);
+
+    if (!model)
+    {
+        return false;
+    }
+
+    s_Models[name] =
+        std::move(model);
+
+    return true;
+}
+
+Model* AssetManager::GetModel(
+    const std::string& name)
+{
+    auto it =
+        s_Models.find(name);
+
+    if (it == s_Models.end())
     {
         return nullptr;
     }

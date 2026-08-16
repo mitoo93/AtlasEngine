@@ -140,6 +140,9 @@ private:
         const Ray& ray) const;
 
     AssetBrowser m_AssetBrowser;
+
+    void HandleAssetDrop(
+        const std::string& assetPath);
 };
 
 }

@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "AtlasEngine/Math/Vector3.h"
+
 namespace AtlasEngine
 {
 
@@ -53,12 +55,30 @@ public:
         return m_Name;
     }
 
+    void SetBaseColor(
+        const Vector3& color)
+    {
+        m_BaseColor = color;
+    }
+
+    const Vector3& GetBaseColor() const
+    {
+        return m_BaseColor;
+    }
+
 private:
 
     Shader* m_Shader = nullptr;
     Texture* m_Texture = nullptr;
 
     std::string m_Name;
+
+    Vector3 m_BaseColor
+    {
+        1.0f,
+        1.0f,
+        1.0f
+    };
 };
 
 }

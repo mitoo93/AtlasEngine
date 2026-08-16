@@ -16,6 +16,8 @@ class Material;
 
 class Texture;
 
+class Model;
+
 class AssetManager
 {
 public:
@@ -49,6 +51,13 @@ public:
     static Texture* GetTexture(
         const std::string& name);
 
+    static bool LoadModel(
+        const std::string& name,
+        const std::string& path);
+
+    static Model* GetModel(
+        const std::string& name);
+
 private:
 
     static std::unordered_map<
@@ -66,6 +75,10 @@ private:
     static std::unordered_map<
         std::string,
         std::unique_ptr<Texture>> s_Textures;
+
+    static std::unordered_map<
+        std::string,
+        std::unique_ptr<Model>> s_Models;
     };
 
 }

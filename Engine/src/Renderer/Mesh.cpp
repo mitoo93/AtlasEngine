@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 
 #include "AtlasEngine/Renderer/Mesh.h"
+#include "AtlasEngine/Renderer/Material.h"
 
 namespace AtlasEngine
 {
@@ -17,21 +18,23 @@ bool Mesh::Create(
     const std::vector<Vertex>& vertices,
     const std::vector<unsigned int>& indices,
     const BufferLayout& layout)
-
 {
     m_VertexArray.Create();
 
     m_VertexBuffer.Create(
         vertices.data(),
-        static_cast<unsigned int>(vertices.size() * sizeof(Vertex)));
+        static_cast<unsigned int>(
+            vertices.size() * sizeof(Vertex)));
 
     m_VertexBuffer.SetLayout(layout);
 
     m_IndexBuffer.Create(
         indices.data(),
-        static_cast<unsigned int>(indices.size()));
+        static_cast<unsigned int>(
+            indices.size()));
 
-    m_VertexArray.AddVertexBuffer(m_VertexBuffer);
+    m_VertexArray.AddVertexBuffer(
+        m_VertexBuffer);
 
     m_IndexBuffer.Bind();
 
@@ -63,6 +66,40 @@ void Mesh::SetName(
 const std::string& Mesh::GetName() const
 {
     return m_Name;
+}
+
+void Mesh::SetMaterial(
+    Material* material)
+{
+    m_Material = material;
+}
+
+Material* Mesh::GetMaterial()
+{
+    return m_Material;
+}
+
+const Material* Mesh::GetMaterial() const
+{
+    return m_Material;
+}
+
+void Mesh::SetBounds(
+    const Vector3& min,
+    const Vector3& max)
+{
+    m_BoundsMin = min;
+    m_BoundsMax = max;
+}
+
+const Vector3& Mesh::GetBoundsMin() const
+{
+    return m_BoundsMin;
+}
+
+const Vector3& Mesh::GetBoundsMax() const
+{
+    return m_BoundsMax;
 }
 
 }

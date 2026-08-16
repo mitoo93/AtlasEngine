@@ -19,7 +19,8 @@ add_library(Engine STATIC
     src/Renderer/Camera.cpp
     src/Renderer/Framebuffer.cpp
     src/Renderer/Texture.cpp
-    
+    src/Renderer/Model.cpp
+
     src/Math/Matrix4.cpp
     src/Math/Transform.cpp
 
@@ -32,6 +33,7 @@ add_library(Engine STATIC
     src/Systems/RenderSystem.cpp
 
     src/Assets/AssetManager.cpp
+    src/Assets/ModelImporter.cpp
 
     src/Serialization/SceneSerializer.cpp
 
@@ -43,8 +45,6 @@ add_library(Engine STATIC
 
     src/ImGui/ImGuiLayer.cpp
     src/ImGuizmo/ImGuizmoLayer.cpp
-
-    
 )
 
 target_include_directories(Engine
@@ -59,4 +59,5 @@ target_link_libraries(Engine
         imgui
         imguizmo
         stb
+        assimp
 )

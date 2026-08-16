@@ -175,4 +175,34 @@ void Shader::SetInt(
         value);
 }
 
+void Shader::SetBool(
+    const std::string& name,
+    bool value) const
+{
+    GLint location =
+        glGetUniformLocation(
+            m_RendererID,
+            name.c_str());
+
+    glUniform1i(
+        location,
+        value ? 1 : 0);
+}
+
+void Shader::SetVector3(
+    const std::string& name,
+    const Vector3& value) const
+{
+    GLint location =
+        glGetUniformLocation(
+            m_RendererID,
+            name.c_str());
+
+    glUniform3f(
+        location,
+        value.x,
+        value.y,
+        value.z);
+}
+
 }

@@ -111,6 +111,14 @@
         std::cout << "Vendor         : " << glGetString(GL_VENDOR) << '\n';
 
         std::cout << "GLAD inicializado correctamente\n";
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
+
         std::cout << "Ventana creada correctamente\n";
         return true;
     }
