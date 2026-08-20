@@ -733,6 +733,24 @@ Entity* EditorLayer::PickEntity(
             0.5f
         };
 
+        if (entity->HasComponent<MeshRendererComponent>())
+        {
+            MeshRendererComponent& meshRenderer =
+                entity->GetComponent<MeshRendererComponent>();
+
+            Mesh* mesh =
+                meshRenderer.GetMesh();
+
+            if (mesh)
+            {
+                localMin =
+                    mesh->GetBoundsMin();
+
+                localMax =
+                    mesh->GetBoundsMax();
+            }
+        }
+
         if (entity->HasComponent<ModelRendererComponent>())
         {
             ModelRendererComponent& modelRenderer =

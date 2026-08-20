@@ -54,6 +54,18 @@ std::unique_ptr<Mesh> MeshFactory::CreateQuad()
         indices,
         Vertex::GetLayout());
 
+    mesh->SetBounds(
+        Vector3{
+            -0.5f,
+            -0.5f,
+            0.0f
+        },
+        Vector3{
+            0.5f,
+            0.5f,
+            0.0f
+        });
+
     return mesh;
 }
 
@@ -231,6 +243,18 @@ std::unique_ptr<Mesh> MeshFactory::CreateSphere(
         vertices,
         indices,
         Vertex::GetLayout());
+        
+    mesh->SetBounds(
+        Vector3{
+            -radius,
+            -radius,
+            -radius
+        },
+        Vector3{
+            radius,
+            radius,
+            radius
+        });
 
     mesh->SetName(
         "Sphere");
