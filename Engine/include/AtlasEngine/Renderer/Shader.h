@@ -41,6 +41,10 @@ public:
         const std::string& name,
         const Vector3& value) const;
 
+    void SetFloat(
+        const std::string& name,
+        float value) const;
+
 private:
 
     unsigned int CompileShader(unsigned int type,

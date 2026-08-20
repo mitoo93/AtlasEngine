@@ -205,4 +205,18 @@ void Shader::SetVector3(
         value.z);
 }
 
+void Shader::SetFloat(
+    const std::string& name,
+    float value) const
+{
+    GLint location =
+        glGetUniformLocation(
+            m_RendererID,
+            name.c_str());
+
+    glUniform1f(
+        location,
+        value);
+}
+
 }

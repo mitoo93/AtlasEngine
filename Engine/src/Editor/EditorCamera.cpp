@@ -230,7 +230,7 @@ Vector3 EditorCamera::GetForward() const
 
 
     forward.x =
-        std::cos(pitch) *
+        -std::cos(pitch) *
         std::sin(yaw);
 
 

@@ -75,6 +75,37 @@ std::unique_ptr<Mesh> ProcessMesh(
                 mesh->mNormals[i].z;
         }
 
+        if (mesh->HasTangentsAndBitangents())
+        {
+            vertex.Tangent[0] =
+                mesh->mTangents[i].x;
+
+            vertex.Tangent[1] =
+                mesh->mTangents[i].y;
+
+            vertex.Tangent[2] =
+                mesh->mTangents[i].z;
+
+            vertex.Bitangent[0] =
+                mesh->mBitangents[i].x;
+
+            vertex.Bitangent[1] =
+                mesh->mBitangents[i].y;
+
+            vertex.Bitangent[2] =
+                mesh->mBitangents[i].z;
+        }
+        else
+        {
+            vertex.Tangent[0] = 0.0f;
+            vertex.Tangent[1] = 0.0f;
+            vertex.Tangent[2] = 0.0f;
+
+            vertex.Bitangent[0] = 0.0f;
+            vertex.Bitangent[1] = 0.0f;
+            vertex.Bitangent[2] = 0.0f;
+        }
+
         if (mesh->mTextureCoords[0])
         {
             vertex.TexCoord[0] =
@@ -255,6 +286,131 @@ std::unique_ptr<Mesh> ProcessMesh(
                         }
                     }
 
+                    // --------------------------------------------
+                    // NORMAL TEXTURE
+                    // --------------------------------------------
+
+                    aiString normalTexturePath;
+
+                    bool hasNormalTexture =
+                        aiMat->GetTexture(
+                            aiTextureType_NORMALS,
+                            0,
+                            &normalTexturePath)
+                        == AI_SUCCESS;
+
+                    if (!hasNormalTexture)
+                    {
+                        hasNormalTexture =
+                            aiMat->GetTexture(
+                                aiTextureType_HEIGHT,
+                                0,
+                                &normalTexturePath)
+                            == AI_SUCCESS;
+
+                        if (hasNormalTexture)
+                        {
+                            std::cout
+                                << "Normal map detectado como HEIGHT/map_Bump: "
+                                << normalTexturePath.C_Str()
+                                << '\n';
+                        }
+                    }
+
+                    if (hasNormalTexture)
+                    {
+                        std::filesystem::path normalFullPath =
+                            modelDirectory /
+                            normalTexturePath.C_Str();
+
+                        const std::string normalTextureName =
+                            std::string("Model_") +
+                            materialName.C_Str() +
+                            "_NormalTexture";
+
+                        if (AssetManager::LoadTexture(
+                                normalTextureName,
+                                normalFullPath.string()))
+                        {
+                            Texture* normalTexture =
+                                AssetManager::GetTexture(
+                                    normalTextureName);
+
+                            if (normalTexture)
+                            {
+                                material->SetNormalTexture(
+                                    normalTexture);
+
+                                std::cout
+                                    << "Normal map asignado al material: "
+                                    << normalTextureName
+                                    << '\n';
+                            }
+                        }
+                        else
+                        {
+                            std::cerr
+                                << "ERROR cargando normal map: "
+                                << normalFullPath.string()
+                                << '\n';
+                        }
+
+                    }
+
+                    // --------------------------------------------
+                    // SPECULAR TEXTURE
+                    // --------------------------------------------
+
+                    aiString specularTexturePath;
+
+                    if (aiMat->GetTexture(
+                            aiTextureType_SPECULAR,
+                            0,
+                            &specularTexturePath)
+                        == AI_SUCCESS)
+                    {
+                        std::cout
+                            << "Specular map detectado: "
+                            << specularTexturePath.C_Str()
+                            << '\n';
+
+                        std::filesystem::path specularFullPath =
+                            modelDirectory /
+                            specularTexturePath.C_Str();
+
+                        const std::string specularTextureName =
+                            std::string("Model_") +
+                            materialName.C_Str() +
+                            "_SpecularTexture";
+
+                        if (AssetManager::LoadTexture(
+                                specularTextureName,
+                                specularFullPath.string()))
+                        {
+                            Texture* specularTexture =
+                                AssetManager::GetTexture(
+                                    specularTextureName);
+
+                            if (specularTexture)
+                            {
+                                material->SetSpecularTexture(
+                                    specularTexture);
+
+                                std::cout
+                                    << "Specular map asignado al material: "
+                                    << specularTextureName
+                                    << '\n';
+                            }
+                        }
+                        else
+                        {
+                            std::cerr
+                                << "ERROR cargando specular map: "
+                                << specularFullPath.string()
+                                << '\n';
+                        }
+                    }
+
                     result->SetMaterial(
                         material);
 
@@ -349,7 +505,8 @@ std::unique_ptr<Model> ModelImporter::Import(
             path,
             aiProcess_Triangulate |
             aiProcess_GenSmoothNormals |
-            aiProcess_JoinIdenticalVertices);
+            aiProcess_JoinIdenticalVertices |
+            aiProcess_CalcTangentSpace);
 
     if (!scene ||
         (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) ||

@@ -66,6 +66,60 @@ public:
         return m_BaseColor;
     }
 
+    void SetShininess(
+        float shininess)
+    {
+        m_Shininess = shininess;
+    }
+
+    float GetShininess() const
+    {
+        return m_Shininess;
+    }
+
+    void SetSpecularStrength(
+        float strength)
+    {
+        m_SpecularStrength = strength;
+    }
+
+    float GetSpecularStrength() const
+    {
+        return m_SpecularStrength;
+    }
+
+    void SetNormalTexture(
+        Texture* texture)
+    {
+        m_NormalTexture = texture;
+    }
+
+    Texture* GetNormalTexture()
+    {
+        return m_NormalTexture;
+    }
+
+    const Texture* GetNormalTexture() const
+    {
+        return m_NormalTexture;
+    }
+
+    void SetSpecularTexture(
+        Texture* texture)
+    {
+        m_SpecularTexture = texture;
+    }
+
+    Texture* GetSpecularTexture()
+    {
+        return m_SpecularTexture;
+    }
+
+    const Texture* GetSpecularTexture() const
+    {
+        return m_SpecularTexture;
+    }
+
 private:
 
     Shader* m_Shader = nullptr;
@@ -79,6 +133,13 @@ private:
         1.0f,
         1.0f
     };
+
+    float m_Shininess = 32.0f;
+
+    float m_SpecularStrength = 0.5f;
+
+    Texture* m_NormalTexture = nullptr;
+    Texture* m_SpecularTexture = nullptr;
 };
 
 }

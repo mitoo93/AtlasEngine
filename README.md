@@ -265,13 +265,20 @@ Materiales importados.
 Integración con AssetManager.
 Drag & Drop de modelos desde Asset Browser.
 
-Hito 32 — Iluminación 
-Normales.
-Luz direccional.
-Luz puntual.
+Hito 32 — Iluminacion:
+Normales y transformación correcta de normales.
+Modelo de iluminación Phong/Blinn-Phong.
 Luz ambiental.
-Materiales iluminados.
-Sombras básicas si el alcance lo permite.
+Luz direccional.
+Point Light con atenuación.
+Spot Light / flashlight.
+Múltiples luces simultáneas.
+Propiedades iluminables del material: ambient, diffuse, specular y shininess.
+Mapas diffuse y specular.
+Normal Mapping.
+Visualización/debug de luces en editor.
+Shadow Mapping direccional básico.
+Posiblemente sombras para una luz puntual si llegamos con margen.
 
 
 

@@ -3,6 +3,8 @@
 #include "AtlasEngine/Renderer/Mesh.h"
 #include "AtlasEngine/Renderer/Material.h"
 
+#include <iostream>
+
 namespace AtlasEngine
 {
 
@@ -21,12 +23,18 @@ bool Mesh::Create(
 {
     m_VertexArray.Create();
 
+    // IMPORTANTE:
+    // El VAO correcto debe estar activo antes
+    // de crear/enlazar el IndexBuffer.
+    m_VertexArray.Bind();
+
     m_VertexBuffer.Create(
         vertices.data(),
         static_cast<unsigned int>(
             vertices.size() * sizeof(Vertex)));
 
-    m_VertexBuffer.SetLayout(layout);
+    m_VertexBuffer.SetLayout(
+        layout);
 
     m_IndexBuffer.Create(
         indices.data(),
@@ -37,6 +45,8 @@ bool Mesh::Create(
         m_VertexBuffer);
 
     m_IndexBuffer.Bind();
+
+    m_VertexArray.Unbind();
 
     return true;
 }

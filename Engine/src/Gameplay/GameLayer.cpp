@@ -18,6 +18,10 @@
 #include "AtlasEngine/Scene/ModelRendererComponent.h"
 #include "AtlasEngine/Scene/MaterialComponent.h"
 #include "AtlasEngine/Scene/CameraComponent.h"
+#include "AtlasEngine/Scene/DirectionalLightComponent.h"
+#include "AtlasEngine/Scene/AmbientLightComponent.h"
+#include "AtlasEngine/Scene/PointLightComponent.h"
+#include "AtlasEngine/Scene/SpotLightComponent.h"
 
 #include "AtlasEngine/Editor/EditorLayer.h"
 
@@ -43,6 +47,11 @@ void GameLayer::OnAttach()
         "Assets/Shaders/Basic.vert",
         "Assets/Shaders/Basic.frag");
 
+    AssetManager::LoadShader(
+        "Shadow",
+        "Assets/Shaders/Shadow.vert",
+        "Assets/Shaders/Shadow.frag");
+
     AssetManager::LoadTexture(
         "Test",
         "Assets/Textures/Test.png");
@@ -64,13 +73,23 @@ void GameLayer::OnAttach()
 
     if (defaultMaterial)
     {
-        defaultMaterial->SetTexture(
-            AssetManager::GetTexture("ModelTexture"));
+        defaultMaterial->SetShininess(
+            32.0f);
+
+        defaultMaterial->SetSpecularStrength(
+            1.0f);
     }
 
     AssetManager::LoadMesh(
         "Quad",
         MeshFactory::CreateQuad());
+
+    AssetManager::LoadMesh(
+        "Sphere",
+        MeshFactory::CreateSphere(
+            1.0f,
+            32,
+            16));
 
     AssetManager::LoadModel(
         "CubeModel",
@@ -140,6 +159,181 @@ void GameLayer::OnAttach()
         });
 
         //----------------------------------------------------
+        // Directional Light
+        //----------------------------------------------------
+
+        Entity& directionalLight =
+            m_Scene.CreateEntity(
+                "DirectionalLight");
+
+        directionalLight.AddComponent<
+            DirectionalLightComponent>();
+
+        DirectionalLightComponent& light =
+            directionalLight.GetComponent<
+                DirectionalLightComponent>();
+
+        light.SetDirection({
+            -0.5f,
+            -1.0f,
+            -0.3f
+        });
+
+        light.SetColor({
+            1.0f,
+            1.0f,
+            1.0f
+        });
+
+        light.SetIntensity(
+            1.0f);
+
+        //----------------------------------------------------
+        // Ambient Light
+        //----------------------------------------------------
+
+        Entity& ambientLight =
+            m_Scene.CreateEntity(
+                "AmbientLight");
+
+        ambientLight.AddComponent<
+            AmbientLightComponent>();
+
+        AmbientLightComponent& ambient =
+            ambientLight.GetComponent<
+                AmbientLightComponent>();
+
+        ambient.SetColor({
+            1.0f,
+            1.0f,
+            1.0f
+        });
+
+        ambient.SetIntensity(
+            0.15f);
+
+        //----------------------------------------------------
+        // Point Light
+        //----------------------------------------------------
+
+        Entity& pointLight =
+            m_Scene.CreateEntity(
+                "PointLight");
+
+        pointLight.AddComponent<
+            PointLightComponent>();
+
+        pointLight.GetTransform().SetPosition({
+            1.5f,
+            1.5f,
+            -1.0f
+        });
+
+        PointLightComponent& point =
+            pointLight.GetComponent<
+                PointLightComponent>();
+
+        point.SetColor({
+            1.0f,
+            0.0f,
+            0.0f
+        });
+
+        point.SetIntensity(
+            0.0f);
+
+        point.SetConstant(
+            1.0f);
+
+        point.SetLinear(
+            0.09f);
+
+        point.SetQuadratic(
+            0.032f);
+
+        //----------------------------------------------------
+        // Point Light 2
+        //----------------------------------------------------
+
+        Entity& pointLight2 =
+            m_Scene.CreateEntity(
+                "PointLight2");
+
+        pointLight2.AddComponent<
+            PointLightComponent>();
+
+        pointLight2.GetTransform().SetPosition({
+            -1.5f,
+            1.0f,
+            -1.0f
+        });
+
+        PointLightComponent& point2 =
+            pointLight2.GetComponent<
+                PointLightComponent>();
+
+        point2.SetColor({
+            1.0f,
+            1.0f,
+            1.0f
+        });
+
+        point2.SetIntensity(
+            0.0f);
+
+        point2.SetConstant(
+            1.0f);
+
+        point2.SetLinear(
+            0.09f);
+
+        point2.SetQuadratic(
+            0.032f);
+
+        
+        //----------------------------------------------------
+        // Spot Light
+        //----------------------------------------------------
+
+        Entity& spotLight =
+            m_Scene.CreateEntity(
+                "SpotLight");
+
+        spotLight.AddComponent<
+            SpotLightComponent>();
+
+        spotLight.GetTransform().SetPosition({
+            0.0f,
+            0.0f,
+            0.0f
+        });
+
+        SpotLightComponent& spot =
+            spotLight.GetComponent<
+                SpotLightComponent>();
+
+        spot.SetDirection({
+            0.0f,
+            0.0f,
+            -1.0f
+        });
+
+        spot.SetColor({
+            1.0f,
+            1.0f,
+            1.0f
+        });
+
+        spot.SetIntensity(
+            0.0f);
+
+        spot.SetInnerCutoff(
+            12.5f);
+
+        spot.SetOuterCutoff(
+            17.5f);
+
+        //----------------------------------------------------
         // Player
         //----------------------------------------------------
 
@@ -188,6 +382,12 @@ void GameLayer::OnAttach()
             -2.0f
         });
 
+        enemy.GetTransform().SetRotation({
+            0.0f,
+            0.0f,
+            0.0f
+        });
+
         enemy.GetTransform().SetScale({
             0.5f,
             0.5f,
@@ -202,6 +402,74 @@ void GameLayer::OnAttach()
                 AssetManager::GetMesh("Quad"));
 
         enemy.GetComponent<MaterialComponent>()
+            .SetMaterial(
+                AssetManager::GetMaterial("Default"));
+
+        //----------------------------------------------------
+        // Sphere
+        //----------------------------------------------------
+
+        Entity& sphere =
+            m_Scene.CreateEntity(
+                "Sphere");
+
+        sphere.GetTransform().SetPosition({
+            -2.0f,
+            0.0f,
+            -3.0f
+        });
+
+        sphere.GetTransform().SetScale({
+            0.75f,
+            0.75f,
+            0.75f
+        });
+
+        sphere.AddComponent<MeshRendererComponent>();
+        sphere.AddComponent<MaterialComponent>();
+
+        sphere.GetComponent<MeshRendererComponent>()
+            .SetMesh(
+                AssetManager::GetMesh("Sphere"));
+
+        sphere.GetComponent<MaterialComponent>()
+            .SetMaterial(
+                AssetManager::GetMaterial("Default"));
+
+        //----------------------------------------------------
+        // Ground
+        //----------------------------------------------------
+
+        Entity& ground =
+            m_Scene.CreateEntity(
+                "Ground");
+
+        ground.GetTransform().SetPosition({
+            0.0f,
+            -1.0f,
+            -3.0f
+        });
+
+        ground.GetTransform().SetRotation({
+            -90.0f,
+            0.0f,
+            0.0f
+        });
+
+        ground.GetTransform().SetScale({
+            10.0f,
+            10.0f,
+            10.0f
+        });
+
+        ground.AddComponent<MeshRendererComponent>();
+        ground.AddComponent<MaterialComponent>();
+
+        ground.GetComponent<MeshRendererComponent>()
+            .SetMesh(
+                AssetManager::GetMesh("Quad"));
+
+        ground.GetComponent<MaterialComponent>()
             .SetMaterial(
                 AssetManager::GetMaterial("Default"));
     }
@@ -235,7 +503,8 @@ void GameLayer::OnUpdate(float dt)
 
         renderSystem.SetViewProjection(
             editorCamera.GetViewMatrix(),
-            editorCamera.GetProjectionMatrix());
+            editorCamera.GetProjectionMatrix(),
+            editorCamera.GetPosition());
     }
     else
     {
@@ -278,6 +547,33 @@ void GameLayer::OnUpdate(float dt)
         m_CameraController.Update(
             camera->GetCamera(),
             dt);
+
+        for (const auto& entity :
+            m_Scene.GetEntities())
+        {
+            if (!entity)
+                continue;
+
+            if (!entity->HasComponent<
+                    SpotLightComponent>())
+            {
+                continue;
+            }
+
+            SpotLightComponent& spot =
+                entity->GetComponent<
+                    SpotLightComponent>();
+
+            entity->GetTransform().SetPosition(
+                camera->GetCamera()
+                    .GetPosition());
+
+            spot.SetDirection(
+                camera->GetCamera()
+                    .GetForward());
+
+            break;
+        }
     }
 
 

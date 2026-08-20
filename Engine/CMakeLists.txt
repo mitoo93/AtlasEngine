@@ -20,6 +20,7 @@ add_library(Engine STATIC
     src/Renderer/Framebuffer.cpp
     src/Renderer/Texture.cpp
     src/Renderer/Model.cpp
+    src/Renderer/ShadowMap.cpp
 
     src/Math/Matrix4.cpp
     src/Math/Transform.cpp

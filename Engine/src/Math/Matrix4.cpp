@@ -408,4 +408,110 @@ Vector3 Matrix4::TransformPoint(
     };
 }
 
+Matrix4 Matrix4::Orthographic(
+    float left,
+    float right,
+    float bottom,
+    float top,
+    float nearPlane,
+    float farPlane)
+{
+    Matrix4 matrix =
+        Identity();
+
+    matrix.m_Values[0] =
+        2.0f /
+        (right - left);
+
+    matrix.m_Values[5] =
+        2.0f /
+        (top - bottom);
+
+    matrix.m_Values[10] =
+        -2.0f /
+        (farPlane - nearPlane);
+
+    matrix.m_Values[12] =
+        -(right + left) /
+        (right - left);
+
+    matrix.m_Values[13] =
+        -(top + bottom) /
+        (top - bottom);
+
+    matrix.m_Values[14] =
+        -(farPlane + nearPlane) /
+        (farPlane - nearPlane);
+
+    return matrix;
+}
+
+Matrix4 Matrix4::LookAt(
+    const Vector3& eye,
+    const Vector3& target,
+    const Vector3& up)
+{
+    Vector3 forward =
+        (target - eye)
+        .Normalized();
+
+    Vector3 right =
+        Vector3::Cross(
+            forward,
+            up)
+        .Normalized();
+
+    Vector3 cameraUp =
+        Vector3::Cross(
+            right,
+            forward);
+
+    Matrix4 matrix =
+        Identity();
+
+    matrix.m_Values[0] =
+        right.x;
+
+    matrix.m_Values[4] =
+        right.y;
+
+    matrix.m_Values[8] =
+        right.z;
+
+    matrix.m_Values[1] =
+        cameraUp.x;
+
+    matrix.m_Values[5] =
+        cameraUp.y;
+
+    matrix.m_Values[9] =
+        cameraUp.z;
+
+    matrix.m_Values[2] =
+        -forward.x;
+
+    matrix.m_Values[6] =
+        -forward.y;
+
+    matrix.m_Values[10] =
+        -forward.z;
+
+    matrix.m_Values[12] =
+        -Vector3::Dot(
+            right,
+            eye);
+
+    matrix.m_Values[13] =
+        -Vector3::Dot(
+            cameraUp,
+            eye);
+
+    matrix.m_Values[14] =
+        Vector3::Dot(
+            forward,
+            eye);
+
+    return matrix;
+}
+
 }
