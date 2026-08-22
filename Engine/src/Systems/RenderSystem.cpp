@@ -6,8 +6,11 @@
 #include "AtlasEngine/Renderer/Model.h"
 #include "AtlasEngine/Renderer/Mesh.h"
 #include "AtlasEngine/Renderer/Renderer.h"
+#include "AtlasEngine/Renderer/Cubemap.h"
+#include "AtlasEngine/Renderer/BRDFLUT.h"
 
 #include "AtlasEngine/Scene/Scene.h"
+#include "AtlasEngine/Scene/CameraComponent.h"
 #include "AtlasEngine/Scene/MeshRendererComponent.h"
 #include "AtlasEngine/Scene/MaterialComponent.h"
 #include "AtlasEngine/Scene/ModelRendererComponent.h"
@@ -18,30 +21,41 @@
 
 #include "AtlasEngine/Assets/AssetManager.h"
 
-#include <iostream>
 #include <cmath>
+#include <string>
 
 
 namespace AtlasEngine
 {
 
 
+// ========================================================
+// UPDATE
+// ========================================================
+
 void RenderSystem::Update(
     Scene& scene)
 {
     Matrix4 view;
+
     Matrix4 projection;
+
+
+    // ----------------------------------------------------
+    // SHADOW MAP INITIALIZATION
+    // ----------------------------------------------------
 
     if (!m_ShadowMapInitialized)
     {
         if (m_ShadowMap.Create(
                 m_ShadowMapResolution,
-                m_ShadowMapResolution));
+                m_ShadowMapResolution))
         {
             m_ShadowMapInitialized =
                 true;
         }
     }
+
 
     Vector3 cameraPosition
     {
@@ -52,7 +66,7 @@ void RenderSystem::Update(
 
 
     // ----------------------------------------------------
-    // CAMERA OVERRIDE
+    // CAMERA
     // ----------------------------------------------------
 
     if (m_UseViewProjectionOverride)
@@ -72,33 +86,48 @@ void RenderSystem::Update(
             scene.FindPrimaryCamera();
 
         if (!camera)
+        {
             return;
+        }
+
 
         cameraPosition =
             camera->GetCamera()
                 .GetPosition();
 
+
         view =
             camera->GetCamera()
                 .GetViewMatrix();
+
 
         projection =
             camera->GetCamera()
                 .GetProjectionMatrix();
     }
 
+
+    // ====================================================
+    // LIGHTS
+    // ====================================================
+
+
     // ----------------------------------------------------
-    // Directional Light
+    // DIRECTIONAL LIGHT
     // ----------------------------------------------------
-    
+
     DirectionalLightComponent* directionalLight =
         nullptr;
 
+
     for (const auto& entity :
-        scene.GetEntities())
+         scene.GetEntities())
     {
         if (!entity)
+        {
             continue;
+        }
+
 
         if (entity->HasComponent<
                 DirectionalLightComponent>())
@@ -111,18 +140,157 @@ void RenderSystem::Update(
         }
     }
 
+
     // ----------------------------------------------------
+    // AMBIENT LIGHT
+    // ----------------------------------------------------
+
+    AmbientLightComponent* ambientLight =
+        nullptr;
+
+
+    for (const auto& entity :
+         scene.GetEntities())
+    {
+        if (!entity)
+        {
+            continue;
+        }
+
+
+        if (entity->HasComponent<
+                AmbientLightComponent>())
+        {
+            ambientLight =
+                &entity->GetComponent<
+                    AmbientLightComponent>();
+
+            break;
+        }
+    }
+
+
+    // ----------------------------------------------------
+    // POINT LIGHTS
+    // ----------------------------------------------------
+
+    constexpr int MaxPointLights =
+        4;
+
+
+    PointLightComponent*
+        pointLights[MaxPointLights]
+        {
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr
+        };
+
+
+    Vector3
+        pointLightPositions[MaxPointLights];
+
+
+    int pointLightCount =
+        0;
+
+
+    for (const auto& entity :
+         scene.GetEntities())
+    {
+        if (!entity)
+        {
+            continue;
+        }
+
+
+        if (!entity->HasComponent<
+                PointLightComponent>())
+        {
+            continue;
+        }
+
+
+        if (pointLightCount >=
+            MaxPointLights)
+        {
+            break;
+        }
+
+
+        pointLights[pointLightCount] =
+            &entity->GetComponent<
+                PointLightComponent>();
+
+
+        pointLightPositions[pointLightCount] =
+            entity->GetTransform()
+                .GetPosition();
+
+
+        ++pointLightCount;
+    }
+
+
+    // ----------------------------------------------------
+    // SPOT LIGHT
+    // ----------------------------------------------------
+
+    SpotLightComponent* spotLight =
+        nullptr;
+
+
+    Vector3 spotLightPosition
+    {
+        0.0f,
+        0.0f,
+        0.0f
+    };
+
+
+    for (const auto& entity :
+         scene.GetEntities())
+    {
+        if (!entity)
+        {
+            continue;
+        }
+
+
+        if (entity->HasComponent<
+                SpotLightComponent>())
+        {
+            spotLight =
+                &entity->GetComponent<
+                    SpotLightComponent>();
+
+
+            spotLightPosition =
+                entity->GetTransform()
+                    .GetPosition();
+
+
+            break;
+        }
+    }
+
+
+    // ====================================================
     // LIGHT SPACE MATRIX
-    // ----------------------------------------------------
+    // ====================================================
 
     Matrix4 lightSpaceMatrix =
         Matrix4::Identity();
 
+
     if (directionalLight)
     {
         Vector3 lightDirection =
-            directionalLight->GetDirection()
+            directionalLight
+                ->GetDirection()
                 .Normalized();
+
 
         Vector3 lightTarget
         {
@@ -131,13 +299,12 @@ void RenderSystem::Update(
             0.0f
         };
 
-        const float lightDistance =
-            m_ShadowLightDistance;
 
         Vector3 lightPosition =
             lightTarget -
             lightDirection *
-            lightDistance;
+            m_ShadowLightDistance;
+
 
         Vector3 lightUp
         {
@@ -145,6 +312,7 @@ void RenderSystem::Update(
             1.0f,
             0.0f
         };
+
 
         if (std::fabs(
                 Vector3::Dot(
@@ -160,11 +328,13 @@ void RenderSystem::Update(
             };
         }
 
+
         Matrix4 lightView =
             Matrix4::LookAt(
                 lightPosition,
                 lightTarget,
                 lightUp);
+
 
         Matrix4 lightProjection =
             Matrix4::Orthographic(
@@ -175,125 +345,39 @@ void RenderSystem::Update(
                 m_ShadowNearPlane,
                 m_ShadowFarPlane);
 
+
         lightSpaceMatrix =
             lightProjection *
             lightView;
     }
 
+
+    // ====================================================
+    // GLOBAL RENDER RESOURCES
+    // ====================================================
+
     Shader* shadowShader =
-        AssetManager::GetShader("Shadow");
+        AssetManager::GetShader(
+            "Shadow");
 
-    // ----------------------------------------------------
-    // Ambient Light
-    // ----------------------------------------------------
 
-    AmbientLightComponent* ambientLight =
-        nullptr;
+    Cubemap* irradianceMap =
+        AssetManager::GetCubemap(
+            "DefaultIrradiance");
 
-    for (const auto& entity :
-        scene.GetEntities())
-    {
-        if (!entity)
-            continue;
 
-        if (entity->HasComponent<
-                AmbientLightComponent>())
-        {
-            ambientLight =
-                &entity->GetComponent<
-                    AmbientLightComponent>();
+    Cubemap* prefilterMap =
+        AssetManager::GetCubemap(
+            "DefaultPrefilter");
 
-            break;
-        }
-    }
 
-    // ----------------------------------------------------
-    // Point Light
-    // ----------------------------------------------------
+    BRDFLUT* brdfLUT =
+        Renderer::GetBRDFLUT();
 
-    constexpr int MaxPointLights = 4;
 
-    PointLightComponent*
-        pointLights[MaxPointLights]
-        {
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr
-        };
-
-    Vector3
-        pointLightPositions[MaxPointLights];
-
-    int pointLightCount = 0;
-
-    for (const auto& entity :
-        scene.GetEntities())
-    {
-        if (!entity)
-            continue;
-
-        if (!entity->HasComponent<
-                PointLightComponent>())
-        {
-            continue;
-        }
-
-        if (pointLightCount >=
-            MaxPointLights)
-        {
-            break;
-        }
-
-        pointLights[pointLightCount] =
-            &entity->GetComponent<
-                PointLightComponent>();
-
-        pointLightPositions[pointLightCount] =
-            entity->GetTransform()
-                .GetPosition();
-
-        ++pointLightCount;
-    }
-
-    // ----------------------------------------------------
-    // Spot Light
-    // ----------------------------------------------------
-
-    SpotLightComponent* spotLight =
-        nullptr;
-
-    Vector3 spotLightPosition
-    {
-        0.0f,
-        0.0f,
-        0.0f
-    };
-
-    for (const auto& entity :
-        scene.GetEntities())
-    {
-        if (!entity)
-            continue;
-
-        if (entity->HasComponent<
-                SpotLightComponent>())
-        {
-            spotLight =
-                &entity->GetComponent<
-                    SpotLightComponent>();
-
-            spotLightPosition =
-                entity->GetTransform()
-                    .GetPosition();
-
-            break;
-        }
-    }
-
-    // ----------------------------------------------------
+    // ====================================================
     // SHADOW DEPTH PASS
-    // ----------------------------------------------------
+    // ====================================================
 
     if (m_ShadowMapInitialized &&
         shadowShader &&
@@ -301,21 +385,33 @@ void RenderSystem::Update(
     {
         m_ShadowMap.BindForWriting();
 
+
         shadowShader->Bind();
 
+
+        shadowShader->SetMatrix4(
+            "u_LightSpaceMatrix",
+            lightSpaceMatrix);
+
+
         for (const auto& entity :
-            scene.GetEntities())
+             scene.GetEntities())
         {
             if (!entity)
+            {
                 continue;
+            }
+
 
             const bool hasMeshRenderer =
                 entity->HasComponent<
                     MeshRendererComponent>();
 
+
             const bool hasModelRenderer =
                 entity->HasComponent<
                     ModelRendererComponent>();
+
 
             if (!hasMeshRenderer &&
                 !hasModelRenderer)
@@ -323,14 +419,16 @@ void RenderSystem::Update(
                 continue;
             }
 
-            shadowShader->SetMatrix4(
-                "u_LightSpaceMatrix",
-                lightSpaceMatrix);
 
             shadowShader->SetMatrix4(
                 "u_Model",
                 entity->GetTransform()
                     .GetWorldMatrix());
+
+
+            // --------------------------------------------
+            // MESH
+            // --------------------------------------------
 
             if (hasMeshRenderer)
             {
@@ -338,8 +436,10 @@ void RenderSystem::Update(
                     entity->GetComponent<
                         MeshRendererComponent>();
 
+
                 Mesh* mesh =
                     meshRenderer.GetMesh();
+
 
                 if (mesh)
                 {
@@ -347,49 +447,73 @@ void RenderSystem::Update(
                 }
             }
 
+
+            // --------------------------------------------
+            // MODEL
+            // --------------------------------------------
+
             if (hasModelRenderer)
             {
                 ModelRendererComponent& modelRenderer =
                     entity->GetComponent<
                         ModelRendererComponent>();
 
+
                 Model* model =
                     modelRenderer.GetModel();
 
+
                 if (!model)
+                {
                     continue;
+                }
+
 
                 for (const auto& meshPtr :
-                    model->GetMeshes())
+                     model->GetMeshes())
                 {
                     if (!meshPtr)
+                    {
                         continue;
+                    }
+
 
                     meshPtr->Draw();
                 }
             }
         }
 
+
         m_ShadowMap.Unbind();
 
-        Renderer::GetFramebuffer()
+
+        Renderer::GetHDRFramebuffer()
             .Bind();
     }
 
 
-    // ----------------------------------------------------
-    // RENDER ENTITIES
-    // ----------------------------------------------------
+    // ====================================================
+    // MAIN RENDER PASS
+    // ====================================================
 
     for (const auto& entity :
          scene.GetEntities())
     {
-        
+        if (!entity)
+        {
+            continue;
+        }
+
+
         const bool hasMeshRenderer =
-            entity->HasComponent<MeshRendererComponent>();
+            entity->HasComponent<
+                MeshRendererComponent>();
+
 
         const bool hasModelRenderer =
-            entity->HasComponent<ModelRendererComponent>();
+            entity->HasComponent<
+                ModelRendererComponent>();
+
 
         if (!hasMeshRenderer &&
             !hasModelRenderer)
@@ -397,453 +521,879 @@ void RenderSystem::Update(
             continue;
         }
 
-        MaterialComponent& materialComponent =
-            entity->GetComponent<MaterialComponent>();
 
-
-        Material* material =
-            materialComponent.GetMaterial();
-
-
-        if (!material)
-            continue;
-
-
-        Shader* entityShader =
-            material->GetShader();
-
-
-        if (!entityShader)
-            continue;
-
-        entityShader->Bind();
-
-
-        entityShader->SetMatrix4(
-            "u_Model",
+        const Matrix4 modelMatrix =
             entity->GetTransform()
-                .GetWorldMatrix());
+                .GetWorldMatrix();
 
 
-        entityShader->SetMatrix4(
-            "u_View",
-            view);
-
-
-        entityShader->SetMatrix4(
-            "u_Projection",
-            projection);
-
-        entityShader->SetMatrix4(
-            "u_LightSpaceMatrix",
-            lightSpaceMatrix);
-
-        Texture* texture =
-            material->GetTexture();
-
-        if (texture)
-        {
-            texture->Bind(0);
-
-            entityShader->SetInt(
-                "u_Texture",
-                0);
-
-            entityShader->SetBool(
-                "u_HasTexture",
-                true);
-        }
-        else
-        {
-            entityShader->SetBool(
-                "u_HasTexture",
-                false);
-        }
-
+        // =================================================
+        // MESH RENDERER
+        // =================================================
 
         if (hasMeshRenderer)
         {
+            if (!entity->HasComponent<
+                    MaterialComponent>())
+            {
+                continue;
+            }
+
+
             MeshRendererComponent& meshRenderer =
-                entity->GetComponent<MeshRendererComponent>();
+                entity->GetComponent<
+                    MeshRendererComponent>();
+
 
             Mesh* mesh =
                 meshRenderer.GetMesh();
 
-            if (mesh)
+
+            if (!mesh)
             {
-                entityShader->SetVector3(
-                    "u_BaseColor",
-                    material->GetBaseColor());
-
-                entityShader->SetVector3(
-                    "u_ViewPosition",
-                    cameraPosition);
-
-                entityShader->SetFloat(
-                    "u_Shininess",
-                    material->GetShininess());
-
-                entityShader->SetFloat(
-                    "u_SpecularStrength",
-                    material->GetSpecularStrength());
-
-                if (directionalLight)
-                {
-                    entityShader->SetVector3(
-                        "u_LightDirection",
-                        directionalLight->GetDirection());
-
-                    entityShader->SetVector3(
-                        "u_LightColor",
-                        directionalLight->GetColor());
-
-                    entityShader->SetFloat(
-                        "u_LightIntensity",
-                        directionalLight->GetIntensity());
-                }
-
-                if (ambientLight)
-                {
-                    entityShader->SetVector3(
-                        "u_AmbientColor",
-                        ambientLight->GetColor());
-
-                    entityShader->SetFloat(
-                        "u_AmbientIntensity",
-                        ambientLight->GetIntensity());
-                }
-
-                entityShader->SetInt(
-                    "u_PointLightCount",
-                    pointLightCount);
-
-                for (int i = 0;
-                    i < pointLightCount;
-                    ++i)
-                {
-                    PointLightComponent* pointLight =
-                        pointLights[i];
-
-                    if (!pointLight)
-                        continue;
-
-                    const std::string prefix =
-                        "u_PointLights[" +
-                        std::to_string(i) +
-                        "].";
-
-                    entityShader->SetVector3(
-                        prefix + "Position",
-                        pointLightPositions[i]);
-
-                    entityShader->SetVector3(
-                        prefix + "Color",
-                        pointLight->GetColor());
-
-                    entityShader->SetFloat(
-                        prefix + "Intensity",
-                        pointLight->GetIntensity());
-
-                    entityShader->SetFloat(
-                        prefix + "Constant",
-                        pointLight->GetConstant());
-
-                    entityShader->SetFloat(
-                        prefix + "Linear",
-                        pointLight->GetLinear());
-
-                    entityShader->SetFloat(
-                        prefix + "Quadratic",
-                        pointLight->GetQuadratic());
-                }
-
-                if (spotLight)
-                {
-                    entityShader->SetVector3(
-                        "u_SpotLightPosition",
-                        spotLightPosition);
-
-                    entityShader->SetVector3(
-                        "u_SpotLightDirection",
-                        spotLight->GetDirection());
-
-                    entityShader->SetVector3(
-                        "u_SpotLightColor",
-                        spotLight->GetColor());
-
-                    entityShader->SetFloat(
-                        "u_SpotLightIntensity",
-                        spotLight->GetIntensity());
-
-                    entityShader->SetFloat(
-                        "u_SpotLightInnerCutoff",
-                        spotLight->GetInnerCutoff());
-
-                    entityShader->SetFloat(
-                        "u_SpotLightOuterCutoff",
-                        spotLight->GetOuterCutoff());
-                }
-
-                entityShader->SetBool(
-                    "u_HasNormalTexture",
-                    false);
-
-                m_ShadowMap.BindTexture(
-                    3);
-
-                entityShader->SetInt(
-                    "u_ShadowMap",
-                    3);
-                
-                mesh->Draw();
+                continue;
             }
+
+
+            MaterialComponent& materialComponent =
+                entity->GetComponent<
+                    MaterialComponent>();
+
+
+            Material* material =
+                materialComponent.GetMaterial();
+
+
+            if (!material)
+            {
+                continue;
+            }
+
+
+            Shader* shader =
+                material->GetShader();
+
+
+            if (!shader)
+            {
+                continue;
+            }
+
+
+            shader->Bind();
+
+
+            // --------------------------------------------
+            // TRANSFORMS
+            // --------------------------------------------
+
+            shader->SetMatrix4(
+                "u_Model",
+                modelMatrix);
+
+
+            shader->SetMatrix4(
+                "u_View",
+                view);
+
+
+            shader->SetMatrix4(
+                "u_Projection",
+                projection);
+
+
+            shader->SetMatrix4(
+                "u_LightSpaceMatrix",
+                lightSpaceMatrix);
+
+
+            // --------------------------------------------
+            // MATERIAL
+            // --------------------------------------------
+
+            BindMaterial(
+                *shader,
+                *material);
+
+
+            // --------------------------------------------
+            // LIGHTS
+            // --------------------------------------------
+
+            BindLights(
+                *shader,
+                directionalLight,
+                ambientLight,
+                pointLights,
+                pointLightPositions,
+                pointLightCount,
+                spotLight,
+                spotLightPosition,
+                cameraPosition);
+
+
+            // --------------------------------------------
+            // SHADOW + IBL
+            // --------------------------------------------
+
+            BindShadowAndIBL(
+                *shader,
+                irradianceMap,
+                prefilterMap,
+                brdfLUT);
+
+
+            // --------------------------------------------
+            // DRAW
+            // --------------------------------------------
+
+            mesh->Draw();
         }
+
+
+        // =================================================
+        // MODEL RENDERER
+        // =================================================
 
         if (hasModelRenderer)
         {
             ModelRendererComponent& modelRenderer =
-                entity->GetComponent<ModelRendererComponent>();
+                entity->GetComponent<
+                    ModelRendererComponent>();
+
 
             Model* model =
                 modelRenderer.GetModel();
 
-            if (model)
+
+            if (!model)
             {
+                continue;
+            }
 
-                for (const auto& meshPtr :
-                    model->GetMeshes())
+
+            for (const auto& meshPtr :
+                 model->GetMeshes())
+            {
+                if (!meshPtr)
                 {
-
-                    if (!meshPtr)
-                        continue;
-
-                    Mesh* mesh =
-                        meshPtr.get();
-
-                    Material* meshMaterial =
-                        mesh->GetMaterial();
-
-                    if (!meshMaterial)
-                        continue;
-
-                    Shader* meshShader =
-                        meshMaterial->GetShader();
-
-                    if (!meshShader)
-                        continue;
-
-                    meshShader->Bind();
-
-                    meshShader->SetMatrix4(
-                        "u_Model",
-                        entity->GetTransform()
-                            .GetWorldMatrix());
-
-                    meshShader->SetMatrix4(
-                        "u_View",
-                        view);
-
-                    meshShader->SetMatrix4(
-                        "u_Projection",
-                        projection);
-
-                    meshShader->SetVector3(
-                        "u_ViewPosition",
-                        cameraPosition);
-
-                    meshShader->SetFloat(
-                        "u_Shininess",
-                        meshMaterial->GetShininess());
-
-                    meshShader->SetFloat(
-                        "u_SpecularStrength",
-                        meshMaterial->GetSpecularStrength());
-
-                    if (directionalLight)
-                    {
-                        meshShader->SetVector3(
-                            "u_LightDirection",
-                            directionalLight->GetDirection());
-
-                        meshShader->SetVector3(
-                            "u_LightColor",
-                            directionalLight->GetColor());
-
-                        meshShader->SetFloat(
-                            "u_LightIntensity",
-                            directionalLight->GetIntensity());
-                    }
-
-                    if (ambientLight)
-                    {
-                        meshShader->SetVector3(
-                            "u_AmbientColor",
-                            ambientLight->GetColor());
-
-                        meshShader->SetFloat(
-                            "u_AmbientIntensity",
-                            ambientLight->GetIntensity());
-                    }
-
-                    meshShader->SetInt(
-                        "u_PointLightCount",
-                        pointLightCount);
-
-                    for (int i = 0;
-                        i < pointLightCount;
-                        ++i)
-                    {
-                        PointLightComponent* pointLight =
-                            pointLights[i];
-
-                        if (!pointLight)
-                            continue;
-
-                        const std::string prefix =
-                            "u_PointLights[" +
-                            std::to_string(i) +
-                            "].";
-
-                        meshShader->SetVector3(
-                            prefix + "Position",
-                            pointLightPositions[i]);
-
-                        meshShader->SetVector3(
-                            prefix + "Color",
-                            pointLight->GetColor());
-
-                        meshShader->SetFloat(
-                            prefix + "Intensity",
-                            pointLight->GetIntensity());
-
-                        meshShader->SetFloat(
-                            prefix + "Constant",
-                            pointLight->GetConstant());
-
-                        meshShader->SetFloat(
-                            prefix + "Linear",
-                            pointLight->GetLinear());
-
-                        meshShader->SetFloat(
-                            prefix + "Quadratic",
-                            pointLight->GetQuadratic());
-                    }
-
-                    if (spotLight)
-                    {
-                        meshShader->SetVector3(
-                            "u_SpotLightPosition",
-                            spotLightPosition);
-
-                        meshShader->SetVector3(
-                            "u_SpotLightDirection",
-                            spotLight->GetDirection());
-
-                        meshShader->SetVector3(
-                            "u_SpotLightColor",
-                            spotLight->GetColor());
-
-                        meshShader->SetFloat(
-                            "u_SpotLightIntensity",
-                            spotLight->GetIntensity());
-
-                        meshShader->SetFloat(
-                            "u_SpotLightInnerCutoff",
-                            spotLight->GetInnerCutoff());
-
-                        meshShader->SetFloat(
-                            "u_SpotLightOuterCutoff",
-                            spotLight->GetOuterCutoff());
-                    }
-
-                    meshShader->SetVector3(
-                        "u_BaseColor",
-                        meshMaterial->GetBaseColor());
-
-                    Texture* meshTexture =
-                        meshMaterial->GetTexture();
-
-                    if (meshTexture)
-                    {
-                        meshTexture->Bind(0);
-
-                        meshShader->SetInt(
-                            "u_Texture",
-                            0);
-
-                        meshShader->SetBool(
-                            "u_HasTexture",
-                            true);
-                    }
-                    else
-                    {
-                        meshShader->SetBool(
-                            "u_HasTexture",
-                            false);
-                    }
-
-                    Texture* normalTexture =
-                        meshMaterial->GetNormalTexture();
-
-                    if (normalTexture)
-                    {
-                        normalTexture->Bind(1);
-
-                        meshShader->SetInt(
-                            "u_NormalTexture",
-                            1);
-
-                        meshShader->SetBool(
-                            "u_HasNormalTexture",
-                            true);
-                    }
-                    else
-                    {
-                        meshShader->SetBool(
-                            "u_HasNormalTexture",
-                            false);
-                    }
-
-                    Texture* specularTexture =
-                        meshMaterial->GetSpecularTexture();
-
-                    if (specularTexture)
-                    {
-                        specularTexture->Bind(2);
-
-                        meshShader->SetInt(
-                            "u_SpecularTexture",
-                            2);
-
-                        meshShader->SetBool(
-                            "u_HasSpecularTexture",
-                            true);
-                    }
-                    else
-                    {
-                        meshShader->SetBool(
-                            "u_HasSpecularTexture",
-                            false);
-                    }
-
-                    m_ShadowMap.BindTexture(
-                        3);
-
-                    meshShader->SetInt(
-                        "u_ShadowMap",
-                        3);
-
-                    mesh->Draw();
+                    continue;
                 }
+
+
+                Mesh* mesh =
+                    meshPtr.get();
+
+
+                Material* material =
+                    mesh->GetMaterial();
+
+
+                if (!material)
+                {
+                    continue;
+                }
+
+
+                Shader* shader =
+                    material->GetShader();
+
+
+                if (!shader)
+                {
+                    continue;
+                }
+
+
+                shader->Bind();
+
+
+                // ----------------------------------------
+                // TRANSFORMS
+                // ----------------------------------------
+
+                shader->SetMatrix4(
+                    "u_Model",
+                    modelMatrix);
+
+
+                shader->SetMatrix4(
+                    "u_View",
+                    view);
+
+
+                shader->SetMatrix4(
+                    "u_Projection",
+                    projection);
+
+
+                shader->SetMatrix4(
+                    "u_LightSpaceMatrix",
+                    lightSpaceMatrix);
+
+
+                // ----------------------------------------
+                // MATERIAL
+                // ----------------------------------------
+
+                BindMaterial(
+                    *shader,
+                    *material);
+
+
+                // ----------------------------------------
+                // LIGHTS
+                // ----------------------------------------
+
+                BindLights(
+                    *shader,
+                    directionalLight,
+                    ambientLight,
+                    pointLights,
+                    pointLightPositions,
+                    pointLightCount,
+                    spotLight,
+                    spotLightPosition,
+                    cameraPosition);
+
+
+                // ----------------------------------------
+                // SHADOW + IBL
+                // ----------------------------------------
+
+                BindShadowAndIBL(
+                    *shader,
+                    irradianceMap,
+                    prefilterMap,
+                    brdfLUT);
+
+
+                // ----------------------------------------
+                // DRAW
+                // ----------------------------------------
+
+                mesh->Draw();
             }
         }
+    }
+
+
+    // ====================================================
+    // SKYBOX PASS
+    // ====================================================
+
+    Shader* skyboxShader =
+        AssetManager::GetShader(
+            "Skybox");
+
+
+    Mesh* skyboxMesh =
+        AssetManager::GetMesh(
+            "SkyboxCube");
+
+
+    Cubemap* skyboxCubemap =
+        AssetManager::GetCubemap(
+            "DefaultSkybox");
+
+
+    if (skyboxShader &&
+        skyboxMesh &&
+        skyboxCubemap)
+    {
+        glDepthFunc(
+            GL_LEQUAL);
+
+
+        skyboxShader->Bind();
+
+
+        Matrix4 skyboxView =
+            view;
+
+
+        skyboxView.Data()[12] =
+            0.0f;
+
+        skyboxView.Data()[13] =
+            0.0f;
+
+        skyboxView.Data()[14] =
+            0.0f;
+
+
+        skyboxShader->SetMatrix4(
+            "u_View",
+            skyboxView);
+
+
+        skyboxShader->SetMatrix4(
+            "u_Projection",
+            projection);
+
+
+        skyboxCubemap->Bind(
+            0);
+
+
+        skyboxShader->SetInt(
+            "u_Skybox",
+            0);
+
+
+        skyboxMesh->Draw();
+
+
+        glDepthFunc(
+            GL_LESS);
     }
 }
 
 
-// --------------------------------------------------------
+// ========================================================
+// BIND MATERIAL
+// ========================================================
+
+void RenderSystem::BindMaterial(
+    Shader& shader,
+    Material& material)
+{
+    // ----------------------------------------------------
+    // SCALAR / COLOR VALUES
+    // ----------------------------------------------------
+
+    shader.SetVector3(
+        "u_BaseColor",
+        material.GetBaseColor());
+
+
+    shader.SetFloat(
+        "u_Shininess",
+        material.GetShininess());
+
+
+    shader.SetFloat(
+        "u_SpecularStrength",
+        material.GetSpecularStrength());
+
+
+    shader.SetFloat(
+        "u_Metallic",
+        material.GetMetallic());
+
+
+    shader.SetFloat(
+        "u_Roughness",
+        material.GetRoughness());
+
+
+    shader.SetFloat(
+        "u_AO",
+        material.GetAmbientOcclusion());
+
+
+    shader.SetBool(
+        "u_PackedMetallicRoughness",
+        material.UsesPackedMetallicRoughness());
+
+
+    // ----------------------------------------------------
+    // ALBEDO
+    // SLOT 0
+    // ----------------------------------------------------
+
+    Texture* albedoTexture =
+        material.GetTexture();
+
+
+    if (albedoTexture)
+    {
+        albedoTexture->Bind(
+            0);
+
+
+        shader.SetInt(
+            "u_Texture",
+            0);
+
+
+        shader.SetBool(
+            "u_HasTexture",
+            true);
+    }
+    else
+    {
+        shader.SetBool(
+            "u_HasTexture",
+            false);
+    }
+
+
+    // ----------------------------------------------------
+    // NORMAL
+    // SLOT 1
+    // ----------------------------------------------------
+
+    Texture* normalTexture =
+        material.GetNormalTexture();
+
+
+    if (normalTexture)
+    {
+        normalTexture->Bind(
+            1);
+
+
+        shader.SetInt(
+            "u_NormalTexture",
+            1);
+
+
+        shader.SetBool(
+            "u_HasNormalTexture",
+            true);
+    }
+    else
+    {
+        shader.SetBool(
+            "u_HasNormalTexture",
+            false);
+    }
+
+
+    // ----------------------------------------------------
+    // SPECULAR
+    // SLOT 2
+    // ----------------------------------------------------
+
+    Texture* specularTexture =
+        material.GetSpecularTexture();
+
+
+    if (specularTexture)
+    {
+        specularTexture->Bind(
+            2);
+
+
+        shader.SetInt(
+            "u_SpecularTexture",
+            2);
+
+
+        shader.SetBool(
+            "u_HasSpecularTexture",
+            true);
+    }
+    else
+    {
+        shader.SetBool(
+            "u_HasSpecularTexture",
+            false);
+    }
+
+
+    // ----------------------------------------------------
+    // METALLIC
+    // SLOT 3
+    // ----------------------------------------------------
+
+    Texture* metallicTexture =
+        material.GetMetallicTexture();
+
+
+    if (metallicTexture)
+    {
+        metallicTexture->Bind(
+            3);
+
+
+        shader.SetInt(
+            "u_MetallicTexture",
+            3);
+
+
+        shader.SetBool(
+            "u_HasMetallicTexture",
+            true);
+    }
+    else
+    {
+        shader.SetBool(
+            "u_HasMetallicTexture",
+            false);
+    }
+
+
+    // ----------------------------------------------------
+    // ROUGHNESS
+    // SLOT 4
+    // ----------------------------------------------------
+
+    Texture* roughnessTexture =
+        material.GetRoughnessTexture();
+
+
+    if (roughnessTexture)
+    {
+        roughnessTexture->Bind(
+            4);
+
+
+        shader.SetInt(
+            "u_RoughnessTexture",
+            4);
+
+
+        shader.SetBool(
+            "u_HasRoughnessTexture",
+            true);
+    }
+    else
+    {
+        shader.SetBool(
+            "u_HasRoughnessTexture",
+            false);
+    }
+
+
+    // ----------------------------------------------------
+    // AO
+    // SLOT 5
+    // ----------------------------------------------------
+
+    Texture* aoTexture =
+        material.GetAOTexture();
+
+
+    if (aoTexture)
+    {
+        aoTexture->Bind(
+            5);
+
+
+        shader.SetInt(
+            "u_AOTexture",
+            5);
+
+
+        shader.SetBool(
+            "u_HasAOTexture",
+            true);
+    }
+    else
+    {
+        shader.SetBool(
+            "u_HasAOTexture",
+            false);
+    }
+}
+
+
+// ========================================================
+// BIND LIGHTS
+// ========================================================
+
+void RenderSystem::BindLights(
+    Shader& shader,
+    DirectionalLightComponent* directionalLight,
+    AmbientLightComponent* ambientLight,
+    PointLightComponent* const* pointLights,
+    const Vector3* pointLightPositions,
+    int pointLightCount,
+    SpotLightComponent* spotLight,
+    const Vector3& spotLightPosition,
+    const Vector3& cameraPosition)
+{
+    // ----------------------------------------------------
+    // CAMERA
+    // ----------------------------------------------------
+
+    shader.SetVector3(
+        "u_ViewPosition",
+        cameraPosition);
+
+
+    // ----------------------------------------------------
+    // DIRECTIONAL LIGHT
+    // ----------------------------------------------------
+
+    if (directionalLight)
+    {
+        shader.SetVector3(
+            "u_LightDirection",
+            directionalLight
+                ->GetDirection());
+
+
+        shader.SetVector3(
+            "u_LightColor",
+            directionalLight
+                ->GetColor());
+
+
+        shader.SetFloat(
+            "u_LightIntensity",
+            directionalLight
+                ->GetIntensity());
+    }
+    else
+    {
+        shader.SetFloat(
+            "u_LightIntensity",
+            0.0f);
+    }
+
+
+    // ----------------------------------------------------
+    // AMBIENT LIGHT
+    // ----------------------------------------------------
+
+    if (ambientLight)
+    {
+        shader.SetVector3(
+            "u_AmbientColor",
+            ambientLight
+                ->GetColor());
+
+
+        shader.SetFloat(
+            "u_AmbientIntensity",
+            ambientLight
+                ->GetIntensity());
+    }
+    else
+    {
+        shader.SetFloat(
+            "u_AmbientIntensity",
+            0.0f);
+    }
+
+
+    // ----------------------------------------------------
+    // POINT LIGHTS
+    // ----------------------------------------------------
+
+    shader.SetInt(
+        "u_PointLightCount",
+        pointLightCount);
+
+
+    for (int i = 0;
+         i < pointLightCount;
+         ++i)
+    {
+        PointLightComponent* pointLight =
+            pointLights[i];
+
+
+        if (!pointLight)
+        {
+            continue;
+        }
+
+
+        const std::string prefix =
+            "u_PointLights[" +
+            std::to_string(i) +
+            "].";
+
+
+        shader.SetVector3(
+            prefix + "Position",
+            pointLightPositions[i]);
+
+
+        shader.SetVector3(
+            prefix + "Color",
+            pointLight->GetColor());
+
+
+        shader.SetFloat(
+            prefix + "Intensity",
+            pointLight->GetIntensity());
+
+
+        shader.SetFloat(
+            prefix + "Constant",
+            pointLight->GetConstant());
+
+
+        shader.SetFloat(
+            prefix + "Linear",
+            pointLight->GetLinear());
+
+
+        shader.SetFloat(
+            prefix + "Quadratic",
+            pointLight->GetQuadratic());
+    }
+
+
+    // ----------------------------------------------------
+    // SPOT LIGHT
+    // ----------------------------------------------------
+
+    if (spotLight)
+    {
+        shader.SetVector3(
+            "u_SpotLightPosition",
+            spotLightPosition);
+
+
+        shader.SetVector3(
+            "u_SpotLightDirection",
+            spotLight
+                ->GetDirection());
+
+
+        shader.SetVector3(
+            "u_SpotLightColor",
+            spotLight
+                ->GetColor());
+
+
+        shader.SetFloat(
+            "u_SpotLightIntensity",
+            spotLight
+                ->GetIntensity());
+
+
+        shader.SetFloat(
+            "u_SpotLightInnerCutoff",
+            spotLight
+                ->GetInnerCutoff());
+
+
+        shader.SetFloat(
+            "u_SpotLightOuterCutoff",
+            spotLight
+                ->GetOuterCutoff());
+    }
+    else
+    {
+        shader.SetFloat(
+            "u_SpotLightIntensity",
+            0.0f);
+    }
+}
+
+
+// ========================================================
+// BIND SHADOW + IBL
+// ========================================================
+
+void RenderSystem::BindShadowAndIBL(
+    Shader& shader,
+    Cubemap* irradianceMap,
+    Cubemap* prefilterMap,
+    BRDFLUT* brdfLUT)
+{
+    // ----------------------------------------------------
+    // SHADOW MAP
+    // SLOT 6
+    // ----------------------------------------------------
+
+    if (m_ShadowMapInitialized)
+    {
+        m_ShadowMap.BindTexture(
+            6);
+
+
+        shader.SetInt(
+            "u_ShadowMap",
+            6);
+    }
+
+
+    // ----------------------------------------------------
+    // IRRADIANCE MAP
+    // SLOT 8
+    // ----------------------------------------------------
+
+    if (irradianceMap)
+    {
+        irradianceMap->Bind(
+            8);
+
+
+        shader.SetInt(
+            "u_IrradianceMap",
+            8);
+
+
+        shader.SetBool(
+            "u_HasIrradianceMap",
+            true);
+    }
+    else
+    {
+        shader.SetBool(
+            "u_HasIrradianceMap",
+            false);
+    }
+
+
+    // ----------------------------------------------------
+    // PREFILTER MAP
+    // SLOT 9
+    // ----------------------------------------------------
+
+    if (prefilterMap)
+    {
+        prefilterMap->Bind(
+            9);
+
+
+        shader.SetInt(
+            "u_PrefilterMap",
+            9);
+
+
+        shader.SetBool(
+            "u_HasPrefilterMap",
+            true);
+    }
+    else
+    {
+        shader.SetBool(
+            "u_HasPrefilterMap",
+            false);
+    }
+
+
+    // ----------------------------------------------------
+    // BRDF LUT
+    // SLOT 10
+    // ----------------------------------------------------
+
+    if (brdfLUT)
+    {
+        brdfLUT->Bind(
+            10);
+
+
+        shader.SetInt(
+            "u_BRDFLUT",
+            10);
+
+
+        shader.SetBool(
+            "u_HasBRDFLUT",
+            true);
+    }
+    else
+    {
+        shader.SetBool(
+            "u_HasBRDFLUT",
+            false);
+    }
+}
+
+
+// ========================================================
 // VIEW / PROJECTION OVERRIDE
-// --------------------------------------------------------
+// ========================================================
 
 void RenderSystem::SetViewProjection(
     const Matrix4& view,
@@ -853,11 +1403,14 @@ void RenderSystem::SetViewProjection(
     m_ViewOverride =
         view;
 
+
     m_ProjectionOverride =
         projection;
 
+
     m_CameraPositionOverride =
         cameraPosition;
+
 
     m_UseViewProjectionOverride =
         true;

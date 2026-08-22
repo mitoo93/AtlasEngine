@@ -28,6 +28,10 @@ public:
     bool Load(
         const std::string& path);
 
+    bool LoadFromMemory(
+        const unsigned char* data,
+        int size);
+
     void Bind(
         unsigned int slot = 0) const;
 

@@ -534,6 +534,114 @@ void EditorLayer::OnImGuiRender()
             "Ninguna entidad seleccionada");
     }
 
+
+    // ----------------------------------------------------
+    // RENDERING
+    // ----------------------------------------------------
+
+    ImGui::Separator();
+
+    if (ImGui::CollapsingHeader(
+            "Rendering",
+            ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        float exposure =
+            Renderer::GetExposure();
+
+        if (ImGui::DragFloat(
+                "Exposure",
+                &exposure,
+                0.05f,
+                0.01f,
+                10.0f))
+        {
+            Renderer::SetExposure(
+                exposure);
+        }
+
+
+        bool bloomEnabled =
+            Renderer::IsBloomEnabled();
+
+        if (ImGui::Checkbox(
+                "Bloom",
+                &bloomEnabled))
+        {
+            Renderer::SetBloomEnabled(
+                bloomEnabled);
+        }
+
+
+        float bloomStrength =
+            Renderer::GetBloomStrength();
+
+        if (ImGui::DragFloat(
+                "Bloom Strength",
+                &bloomStrength,
+                0.01f,
+                0.0f,
+                5.0f))
+        {
+            Renderer::SetBloomStrength(
+                bloomStrength);
+        }
+
+
+        float bloomThreshold =
+            Renderer::GetBloomThreshold();
+
+        if (ImGui::DragFloat(
+                "Bloom Threshold",
+                &bloomThreshold,
+                0.05f,
+                0.0f,
+                10.0f))
+        {
+            Renderer::SetBloomThreshold(
+                bloomThreshold);
+        }
+
+
+        bool vignetteEnabled =
+            Renderer::IsVignetteEnabled();
+
+        if (ImGui::Checkbox(
+                "Vignette",
+                &vignetteEnabled))
+        {
+            Renderer::SetVignetteEnabled(
+                vignetteEnabled);
+        }
+
+
+        float vignetteStrength =
+            Renderer::GetVignetteStrength();
+
+        if (ImGui::DragFloat(
+                "Vignette Strength",
+                &vignetteStrength,
+                0.05f,
+                0.0f,
+                5.0f))
+        {
+            Renderer::SetVignetteStrength(
+                vignetteStrength);
+        }
+
+
+        bool grayscaleEnabled =
+            Renderer::IsGrayscaleEnabled();
+
+        if (ImGui::Checkbox(
+                "Grayscale",
+                &grayscaleEnabled))
+        {
+            Renderer::SetGrayscaleEnabled(
+                grayscaleEnabled);
+        }
+    }
+
+
     ImGui::End();
 
     // ----------------------------------------------------

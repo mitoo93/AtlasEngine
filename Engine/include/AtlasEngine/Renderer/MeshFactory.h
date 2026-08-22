@@ -17,6 +17,9 @@ public:
         float radius = 1.0f,
         unsigned int segments = 32,
         unsigned int rings = 16);
+
+    static std::unique_ptr<Mesh>
+        CreateSkyboxCube();
 };
 
 }

@@ -262,4 +262,67 @@ std::unique_ptr<Mesh> MeshFactory::CreateSphere(
     return mesh;
 }
 
+std::unique_ptr<Mesh>
+MeshFactory::CreateSkyboxCube()
+{
+    auto mesh =
+        std::make_unique<Mesh>();
+
+    std::vector<Vertex> vertices
+    {
+        { { -1.0f, -1.0f, -1.0f } },
+        { {  1.0f, -1.0f, -1.0f } },
+        { {  1.0f,  1.0f, -1.0f } },
+        { { -1.0f,  1.0f, -1.0f } },
+
+        { { -1.0f, -1.0f,  1.0f } },
+        { {  1.0f, -1.0f,  1.0f } },
+        { {  1.0f,  1.0f,  1.0f } },
+        { { -1.0f,  1.0f,  1.0f } }
+    };
+
+    std::vector<unsigned int> indices
+    {
+        0, 1, 2,
+        2, 3, 0,
+
+        1, 5, 6,
+        6, 2, 1,
+
+        5, 4, 7,
+        7, 6, 5,
+
+        4, 0, 3,
+        3, 7, 4,
+
+        3, 2, 6,
+        6, 7, 3,
+
+        4, 5, 1,
+        1, 0, 4
+    };
+
+    mesh->Create(
+        vertices,
+        indices,
+        Vertex::GetLayout());
+
+    mesh->SetName(
+        "SkyboxCube");
+
+    mesh->SetBounds(
+        Vector3{
+            -1.0f,
+            -1.0f,
+            -1.0f
+        },
+        Vector3{
+            1.0f,
+            1.0f,
+            1.0f
+        });
+
+    return mesh;
+}
+
 }

@@ -7,10 +7,12 @@ namespace AtlasEngine
 
 Framebuffer::Framebuffer(
     unsigned int width,
-    unsigned int height)
+    unsigned int height,
+    FramebufferColorFormat colorFormat)
     :
     m_Width(width),
-    m_Height(height)
+    m_Height(height),
+    m_ColorFormat(colorFormat)
 {
     Invalidate();
 }
@@ -94,16 +96,33 @@ void Framebuffer::Invalidate()
         GL_TEXTURE_2D,
         m_ColorAttachment);
 
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA8,
-        m_Width,
-        m_Height,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        nullptr);
+    if (m_ColorFormat ==
+        FramebufferColorFormat::RGBA16F)
+    {
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA16F,
+            m_Width,
+            m_Height,
+            0,
+            GL_RGBA,
+            GL_FLOAT,
+            nullptr);
+    }
+    else
+    {
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA8,
+            m_Width,
+            m_Height,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            nullptr);
+    }
 
     glTexParameteri(
         GL_TEXTURE_2D,

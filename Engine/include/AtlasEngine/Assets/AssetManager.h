@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include "AtlasEngine/Renderer/Mesh.h"
 
 namespace AtlasEngine
@@ -17,6 +18,8 @@ class Material;
 class Texture;
 
 class Model;
+
+class Cubemap;
 
 class AssetManager
 {
@@ -48,6 +51,11 @@ public:
         const std::string& name,
         const std::string& path);
 
+    static bool LoadTextureFromMemory(
+        const std::string& name,
+        const unsigned char* data,
+        int size);
+
     static Texture* GetTexture(
         const std::string& name);
 
@@ -56,6 +64,18 @@ public:
         const std::string& path);
 
     static Model* GetModel(
+        const std::string& name);
+
+    static bool LoadCubemap(
+        const std::string& name,
+        const std::vector<std::string>& faces);
+
+    static bool CreateCubemap(
+        const std::string& name,
+        unsigned int size,
+        bool generateMipmaps = false);
+
+    static Cubemap* GetCubemap(
         const std::string& name);
 
 private:
@@ -79,6 +99,10 @@ private:
     static std::unordered_map<
         std::string,
         std::unique_ptr<Model>> s_Models;
+
+    static std::unordered_map<
+        std::string,
+        std::unique_ptr<Cubemap>> s_Cubemaps;
     };
 
 }

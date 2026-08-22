@@ -120,6 +120,104 @@ public:
         return m_SpecularTexture;
     }
 
+    void SetMetallic(
+        float metallic)
+    {
+        m_Metallic = metallic;
+    }
+
+    float GetMetallic() const
+    {
+        return m_Metallic;
+    }
+
+    void SetRoughness(
+        float roughness)
+    {
+        m_Roughness = roughness;
+    }
+
+    float GetRoughness() const
+    {
+        return m_Roughness;
+    }
+
+    void SetAmbientOcclusion(
+        float ao)
+    {
+        m_AmbientOcclusion = ao;
+    }
+
+    float GetAmbientOcclusion() const
+    {
+        return m_AmbientOcclusion;
+    }
+
+    void SetMetallicTexture(
+    Texture* texture)
+{
+    m_MetallicTexture =
+        texture;
+}
+
+Texture* GetMetallicTexture()
+{
+    return m_MetallicTexture;
+}
+
+const Texture* GetMetallicTexture() const
+{
+    return m_MetallicTexture;
+}
+
+
+void SetRoughnessTexture(
+    Texture* texture)
+{
+    m_RoughnessTexture =
+        texture;
+}
+
+Texture* GetRoughnessTexture()
+{
+    return m_RoughnessTexture;
+}
+
+const Texture* GetRoughnessTexture() const
+{
+    return m_RoughnessTexture;
+}
+
+
+void SetAOTexture(
+    Texture* texture)
+{
+    m_AOTexture =
+        texture;
+}
+
+Texture* GetAOTexture()
+{
+    return m_AOTexture;
+}
+
+const Texture* GetAOTexture() const
+{
+    return m_AOTexture;
+}
+
+void SetPackedMetallicRoughness(
+    bool packed)
+{
+    m_PackedMetallicRoughness =
+        packed;
+}
+
+bool UsesPackedMetallicRoughness() const
+{
+    return m_PackedMetallicRoughness;
+}
+
 private:
 
     Shader* m_Shader = nullptr;
@@ -140,6 +238,22 @@ private:
 
     Texture* m_NormalTexture = nullptr;
     Texture* m_SpecularTexture = nullptr;
+
+    float m_Metallic = 0.0f;
+    float m_Roughness = 0.5f;
+    float m_AmbientOcclusion = 1.0f;
+
+    Texture* m_MetallicTexture =
+        nullptr;
+
+    Texture* m_RoughnessTexture =
+        nullptr;
+
+    Texture* m_AOTexture =
+        nullptr;
+
+    bool m_PackedMetallicRoughness =
+    false;
 };
 
 }

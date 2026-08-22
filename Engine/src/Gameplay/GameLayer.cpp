@@ -9,6 +9,9 @@
 #include "AtlasEngine/Renderer/Texture.h"
 #include "AtlasEngine/Renderer/Material.h"
 #include "AtlasEngine/Renderer/Model.h"
+#include "AtlasEngine/Renderer/Cubemap.h"
+#include "AtlasEngine/Renderer/Shader.h"
+#include "AtlasEngine/Renderer/Mesh.h"
 
 #include "AtlasEngine/Assets/AssetManager.h"
 
@@ -39,7 +42,7 @@ void GameLayer::OnAttach()
     m_Scene.AddSystem<RenderSystem>();
 
     //----------------------------------------------------
-    // Recursos
+    // Shaders
     //----------------------------------------------------
 
     AssetManager::LoadShader(
@@ -48,9 +51,58 @@ void GameLayer::OnAttach()
         "Assets/Shaders/Basic.frag");
 
     AssetManager::LoadShader(
+        "PBR",
+        "Assets/Shaders/PBR.vert",
+        "Assets/Shaders/PBR.frag");
+
+    AssetManager::LoadShader(
         "Shadow",
         "Assets/Shaders/Shadow.vert",
         "Assets/Shaders/Shadow.frag");
+
+    AssetManager::LoadShader(
+        "Skybox",
+        "Assets/Shaders/Skybox.vert",
+        "Assets/Shaders/Skybox.frag");
+
+    AssetManager::LoadShader(
+        "ToneMapping",
+        "Assets/Shaders/ToneMapping.vert",
+        "Assets/Shaders/ToneMapping.frag");
+
+    AssetManager::LoadShader(
+        "BrightPass",
+        "Assets/Shaders/BrightPass.vert",
+        "Assets/Shaders/BrightPass.frag");
+
+    AssetManager::LoadShader(
+        "GaussianBlur",
+        "Assets/Shaders/GaussianBlur.vert",
+        "Assets/Shaders/GaussianBlur.frag");
+
+    AssetManager::LoadShader(
+        "BloomComposite",
+        "Assets/Shaders/BloomComposite.vert",
+        "Assets/Shaders/BloomComposite.frag");
+
+    AssetManager::LoadShader(
+        "Irradiance",
+        "Assets/Shaders/Irradiance.vert",
+        "Assets/Shaders/Irradiance.frag");
+
+    AssetManager::LoadShader(
+        "Prefilter",
+        "Assets/Shaders/Prefilter.vert",
+        "Assets/Shaders/Prefilter.frag");
+
+    AssetManager::LoadShader(
+        "BRDF",
+        "Assets/Shaders/BRDF.vert",
+        "Assets/Shaders/BRDF.frag");
+
+    //----------------------------------------------------
+    // Textures
+    //----------------------------------------------------
 
     AssetManager::LoadTexture(
         "Test",
@@ -64,12 +116,38 @@ void GameLayer::OnAttach()
         "ModelTexture",
         "Assets/Models/texture.png");
 
+    AssetManager::LoadTexture(
+        "MetalPlate_Albedo",
+        "Assets/Textures/PBR/MetalPlate/albedo.png");
+
+    AssetManager::LoadTexture(
+        "MetalPlate_Normal",
+        "Assets/Textures/PBR/MetalPlate/normal.png");
+
+    AssetManager::LoadTexture(
+        "MetalPlate_Metallic",
+        "Assets/Textures/PBR/MetalPlate/metallic.png");
+
+    AssetManager::LoadTexture(
+        "MetalPlate_Roughness",
+        "Assets/Textures/PBR/MetalPlate/roughness.png");
+
+    AssetManager::LoadTexture(
+        "MetalPlate_AO",
+        "Assets/Textures/PBR/MetalPlate/ao.png");
+
+
+    //----------------------------------------------------
+    // Basic Material
+    //----------------------------------------------------
+
     AssetManager::LoadMaterial(
         "Default",
         AssetManager::GetShader("Basic"));
 
     Material* defaultMaterial =
-        AssetManager::GetMaterial("Default");
+        AssetManager::GetMaterial(
+            "Default");
 
     if (defaultMaterial)
     {
@@ -79,6 +157,78 @@ void GameLayer::OnAttach()
         defaultMaterial->SetSpecularStrength(
             1.0f);
     }
+
+
+    //----------------------------------------------------
+    // PBR Material
+    //----------------------------------------------------
+
+    AssetManager::LoadMaterial(
+        "PBR_Default",
+        AssetManager::GetShader("PBR"));
+
+    Material* pbrMaterial =
+        AssetManager::GetMaterial(
+            "PBR_Default");
+
+    if (pbrMaterial)
+    {
+        pbrMaterial->SetBaseColor({
+            1.0f,
+            1.0f,
+            1.0f
+        });
+
+        pbrMaterial->SetMetallic(
+            0.0f);
+
+        pbrMaterial->SetRoughness(
+            0.5f);
+
+        pbrMaterial->SetAmbientOcclusion(
+            1.0f);
+
+
+        pbrMaterial->SetTexture(
+            AssetManager::GetTexture(
+                "MetalPlate_Albedo"));
+
+        pbrMaterial->SetNormalTexture(
+            AssetManager::GetTexture(
+                "MetalPlate_Normal"));
+
+        pbrMaterial->SetMetallicTexture(
+            AssetManager::GetTexture(
+                "MetalPlate_Metallic"));
+
+        pbrMaterial->SetRoughnessTexture(
+            AssetManager::GetTexture(
+                "MetalPlate_Roughness"));
+
+        pbrMaterial->SetAOTexture(
+            AssetManager::GetTexture(
+                "MetalPlate_AO"));
+    }
+
+    //----------------------------------------------------
+    // Cube Map
+    //----------------------------------------------------
+
+    AssetManager::LoadCubemap(
+        "DefaultSkybox",
+        {
+            "Assets/Skyboxes/Default/right.jpg",
+            "Assets/Skyboxes/Default/left.jpg",
+            "Assets/Skyboxes/Default/top.jpg",
+            "Assets/Skyboxes/Default/bottom.jpg",
+            "Assets/Skyboxes/Default/front.jpg",
+            "Assets/Skyboxes/Default/back.jpg"
+        });
+
+
+    //----------------------------------------------------
+    // Meshes
+    //----------------------------------------------------
 
     AssetManager::LoadMesh(
         "Quad",
@@ -90,6 +240,117 @@ void GameLayer::OnAttach()
             1.0f,
             32,
             16));
+
+    AssetManager::LoadMesh(
+        "SkyboxCube",
+        MeshFactory::CreateSkyboxCube());
+
+    if (!Renderer::InitBRDFLUT())
+    {
+        std::cout
+            << "ERROR inicializando BRDF LUT\n";
+    }
+
+
+    //----------------------------------------------------
+    // IBL - Irradiance Map
+    //----------------------------------------------------
+
+    AssetManager::CreateCubemap(
+        "DefaultIrradiance",
+        32,
+        false);
+
+    Cubemap* environmentMap =
+        AssetManager::GetCubemap(
+            "DefaultSkybox");
+
+    Cubemap* irradianceMap =
+        AssetManager::GetCubemap(
+            "DefaultIrradiance");
+
+    Shader* irradianceShader =
+        AssetManager::GetShader(
+            "Irradiance");
+
+    Mesh* skyboxCube =
+        AssetManager::GetMesh(
+            "SkyboxCube");
+
+    if (environmentMap &&
+        irradianceMap &&
+        irradianceShader &&
+        skyboxCube)
+    {
+        if (irradianceMap->GenerateIrradianceMap(
+                *environmentMap,
+                *irradianceShader,
+                *skyboxCube,
+                32))
+        {
+            std::cout
+                << "Irradiance map generado correctamente\n";
+        }
+        else
+        {
+            std::cout
+                << "ERROR generando irradiance map\n";
+        }
+    }
+    else
+    {
+        std::cout
+            << "ERROR: faltan recursos para generar Irradiance Map\n";
+    }
+
+    //----------------------------------------------------
+    // IBL - PREFILTER MAP
+    //----------------------------------------------------
+
+    AssetManager::CreateCubemap(
+        "DefaultPrefilter",
+        128,
+        true);
+
+    Cubemap* prefilterMap =
+        AssetManager::GetCubemap(
+            "DefaultPrefilter");
+
+    Shader* prefilterShader =
+        AssetManager::GetShader(
+            "Prefilter");
+
+    if (environmentMap &&
+        prefilterMap &&
+        prefilterShader &&
+        skyboxCube)
+    {
+        if (prefilterMap->GeneratePrefilterMap(
+                *environmentMap,
+                *prefilterShader,
+                *skyboxCube,
+                128,
+                5))
+        {
+            std::cout
+                << "Prefilter map generado correctamente\n";
+        }
+        else
+        {
+            std::cout
+                << "ERROR generando prefilter map\n";
+        }
+    }
+    else
+    {
+        std::cout
+            << "ERROR: faltan recursos para generar Prefilter Map\n";
+    }
+
+
+    //----------------------------------------------------
+    // Models
+    //----------------------------------------------------
 
     AssetManager::LoadModel(
         "CubeModel",
@@ -186,7 +447,7 @@ void GameLayer::OnAttach()
         });
 
         light.SetIntensity(
-            1.0f);
+            2.0f);
 
         //----------------------------------------------------
         // Ambient Light
@@ -210,7 +471,7 @@ void GameLayer::OnAttach()
         });
 
         ambient.SetIntensity(
-            0.15f);
+            0.05f);
 
         //----------------------------------------------------
         // Point Light
@@ -224,9 +485,9 @@ void GameLayer::OnAttach()
             PointLightComponent>();
 
         pointLight.GetTransform().SetPosition({
-            1.5f,
-            1.5f,
-            -1.0f
+            2.0f,
+            3.0f,
+            2.0f
         });
 
         PointLightComponent& point =
@@ -235,8 +496,8 @@ void GameLayer::OnAttach()
 
         point.SetColor({
             1.0f,
-            0.0f,
-            0.0f
+            1.0f,
+            1.0f
         });
 
         point.SetIntensity(
@@ -434,7 +695,8 @@ void GameLayer::OnAttach()
 
         sphere.GetComponent<MaterialComponent>()
             .SetMaterial(
-                AssetManager::GetMaterial("Default"));
+                AssetManager::GetMaterial(
+                    "PBR_Default"));
 
         //----------------------------------------------------
         // Ground
@@ -473,6 +735,18 @@ void GameLayer::OnAttach()
             .SetMaterial(
                 AssetManager::GetMaterial("Default"));
     }
+
+    Renderer::SetExposure(
+        1.0f);
+
+    Renderer::SetGrayscaleEnabled(
+        false);
+
+    Renderer::SetVignetteEnabled(
+        false);
+
+    Renderer::SetVignetteStrength(
+        1.5f);
 }
 
 void GameLayer::OnUpdate(float dt)

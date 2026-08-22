@@ -5,13 +5,22 @@
 namespace AtlasEngine
 {
 
+enum class FramebufferColorFormat
+{
+    RGBA8 = 0,
+    RGBA16F
+};
+
+
 class Framebuffer
 {
 public:
 
     Framebuffer(
         unsigned int width,
-        unsigned int height);
+        unsigned int height,
+        FramebufferColorFormat colorFormat =
+            FramebufferColorFormat::RGBA8);
 
     ~Framebuffer();
 
@@ -52,6 +61,9 @@ private:
     unsigned int m_Width = 0;
 
     unsigned int m_Height = 0;
+
+    FramebufferColorFormat m_ColorFormat =
+        FramebufferColorFormat::RGBA8;
 };
 
 }

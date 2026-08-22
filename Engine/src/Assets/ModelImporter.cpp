@@ -24,6 +24,114 @@ namespace AtlasEngine
 namespace
 {
 
+Texture* LoadMaterialTexture(
+    const aiScene* scene,
+    const aiString& texturePath,
+    const std::filesystem::path& modelDirectory,
+    const std::string& textureAssetName)
+{
+    if (!scene)
+        return nullptr;
+
+    const std::string path =
+        texturePath.C_Str();
+
+    // ----------------------------------------------------
+    // EMBEDDED TEXTURE
+    // ----------------------------------------------------
+
+    if (!path.empty() &&
+        path[0] == '*')
+    {
+        unsigned int textureIndex = 0;
+
+        try
+        {
+            textureIndex =
+                static_cast<unsigned int>(
+                    std::stoul(
+                        path.substr(1)));
+        }
+        catch (...)
+        {
+            return nullptr;
+        }
+
+        if (textureIndex >=
+            scene->mNumTextures)
+        {
+            return nullptr;
+        }
+
+        const aiTexture* embeddedTexture =
+            scene->mTextures[
+                textureIndex];
+
+        if (!embeddedTexture)
+            return nullptr;
+
+        // GLB normalmente guarda PNG/JPG comprimido.
+        // En ese caso mHeight == 0 y mWidth es el tamaño
+        // del bloque comprimido en bytes.
+        if (embeddedTexture->mHeight == 0)
+        {
+            const unsigned char* data =
+                reinterpret_cast<
+                    const unsigned char*>(
+                        embeddedTexture->pcData);
+
+            const int size =
+                static_cast<int>(
+                    embeddedTexture->mWidth);
+
+            if (!AssetManager::
+                    LoadTextureFromMemory(
+                        textureAssetName,
+                        data,
+                        size))
+            {
+                return nullptr;
+            }
+
+            std::cout
+                << "Textura embebida cargada: "
+                << path
+                << " -> "
+                << textureAssetName
+                << '\n';
+
+            return AssetManager::GetTexture(
+                textureAssetName);
+        }
+
+        // Por ahora no tratamos aiTexture sin comprimir.
+        std::cerr
+            << "AVISO: textura embebida sin comprimir no soportada: "
+            << path
+            << '\n';
+
+        return nullptr;
+    }
+
+    // ----------------------------------------------------
+    // EXTERNAL TEXTURE
+    // ----------------------------------------------------
+
+    std::filesystem::path fullPath =
+        modelDirectory /
+        path;
+
+    if (!AssetManager::LoadTexture(
+            textureAssetName,
+            fullPath.string()))
+    {
+        return nullptr;
+    }
+
+    return AssetManager::GetTexture(
+        textureAssetName);
+}
+
 std::unique_ptr<Mesh> ProcessMesh(
     aiMesh* mesh,
     const aiScene* scene,
@@ -210,8 +318,37 @@ std::unique_ptr<Mesh> ProcessMesh(
                 << materialName.C_Str()
                 << std::endl;
 
+            // ----------------------------------------------------
+            // DETECT MATERIAL TYPE
+            // ----------------------------------------------------
+
+            bool isPBRMaterial =
+                aiMat->GetTextureCount(
+                    aiTextureType_METALNESS) > 0 ||
+                aiMat->GetTextureCount(
+                    aiTextureType_DIFFUSE_ROUGHNESS) > 0 ||
+                aiMat->GetTextureCount(
+                    aiTextureType_AMBIENT_OCCLUSION) > 0;
+
+
+            // ----------------------------------------------------
+            // SELECT SHADER
+            // ----------------------------------------------------
+
             Shader* shader =
-                AssetManager::GetShader("Basic");
+                AssetManager::GetShader(
+                    isPBRMaterial
+                        ? "PBR"
+                        : "Basic");
+            std::cout
+                << "Material "
+                << materialName.C_Str()
+                << " detectado como: "
+                << (isPBRMaterial
+                    ? "PBR"
+                    : "Basic")
+                << '\n';
+
 
             if (shader)
             {
@@ -233,7 +370,39 @@ std::unique_ptr<Mesh> ProcessMesh(
 
                 if (material)
                 {
+                    // --------------------------------------------
+                    // PBR SCALAR VALUES
+                    // --------------------------------------------
+
+                    float metallic =
+                        0.0f;
+
+                    if (aiMat->Get(
+                            AI_MATKEY_METALLIC_FACTOR,
+                            metallic)
+                        == AI_SUCCESS)
+                    {
+                        material->SetMetallic(
+                            metallic);
+                    }
+
+
+                    float roughness =
+                        0.5f;
+
+                    if (aiMat->Get(
+                            AI_MATKEY_ROUGHNESS_FACTOR,
+                            roughness)
+                        == AI_SUCCESS)
+                    {
+                        material->SetRoughness(
+                            roughness);
+                    }
+
+
+                    // --------------------------------------------
                     // BASE COLOR
+                    // --------------------------------------------
                     aiColor3D diffuseColor(
                         1.0f,
                         1.0f,
@@ -252,7 +421,10 @@ std::unique_ptr<Mesh> ProcessMesh(
                             });
                     }
 
-                    // DIFFUSE TEXTURE
+                    // --------------------------------------------
+                    // DIFFUSE / ALBEDO TEXTURE
+                    // --------------------------------------------
+
                     aiString texturePath;
 
                     if (aiMat->GetTexture(
@@ -261,28 +433,27 @@ std::unique_ptr<Mesh> ProcessMesh(
                             &texturePath)
                         == AI_SUCCESS)
                     {
-                        std::filesystem::path textureFullPath =
-                            modelDirectory /
-                            texturePath.C_Str();
-
                         const std::string textureName =
                             std::string("Model_") +
                             materialName.C_Str() +
                             "_Texture";
 
-                        if (AssetManager::LoadTexture(
-                                textureName,
-                                textureFullPath.string()))
-                        {
-                            Texture* texture =
-                                AssetManager::GetTexture(
-                                    textureName);
+                        Texture* texture =
+                            LoadMaterialTexture(
+                                scene,
+                                texturePath,
+                                modelDirectory,
+                                textureName);
 
-                            if (texture)
-                            {
-                                material->SetTexture(
-                                    texture);
-                            }
+                        if (texture)
+                        {
+                            material->SetTexture(
+                                texture);
+
+                            std::cout
+                                << "Albedo/Diffuse map asignado al material: "
+                                << textureName
+                                << '\n';
                         }
                     }
 
@@ -319,42 +490,35 @@ std::unique_ptr<Mesh> ProcessMesh(
 
                     if (hasNormalTexture)
                     {
-                        std::filesystem::path normalFullPath =
-                            modelDirectory /
-                            normalTexturePath.C_Str();
-
                         const std::string normalTextureName =
                             std::string("Model_") +
                             materialName.C_Str() +
                             "_NormalTexture";
 
-                        if (AssetManager::LoadTexture(
-                                normalTextureName,
-                                normalFullPath.string()))
+                        Texture* normalTexture =
+                            LoadMaterialTexture(
+                                scene,
+                                normalTexturePath,
+                                modelDirectory,
+                                normalTextureName);
+
+                        if (normalTexture)
                         {
-                            Texture* normalTexture =
-                                AssetManager::GetTexture(
-                                    normalTextureName);
+                            material->SetNormalTexture(
+                                normalTexture);
 
-                            if (normalTexture)
-                            {
-                                material->SetNormalTexture(
-                                    normalTexture);
-
-                                std::cout
-                                    << "Normal map asignado al material: "
-                                    << normalTextureName
-                                    << '\n';
-                            }
+                            std::cout
+                                << "Normal map asignado al material: "
+                                << normalTextureName
+                                << '\n';
                         }
                         else
                         {
                             std::cerr
                                 << "ERROR cargando normal map: "
-                                << normalFullPath.string()
+                                << normalTexturePath.C_Str()
                                 << '\n';
                         }
-
                     }
 
                     // --------------------------------------------
@@ -407,6 +571,168 @@ std::unique_ptr<Mesh> ProcessMesh(
                             std::cerr
                                 << "ERROR cargando specular map: "
                                 << specularFullPath.string()
+                                << '\n';
+                        }
+                    }
+
+                    // --------------------------------------------
+                    // METALLIC TEXTURE
+                    // --------------------------------------------
+
+                    aiString metallicTexturePath;
+
+                    if (aiMat->GetTexture(
+                            aiTextureType_METALNESS,
+                            0,
+                            &metallicTexturePath)
+                        == AI_SUCCESS)
+                    {
+                        const std::string metallicTextureName =
+                            std::string("Model_") +
+                            materialName.C_Str() +
+                            "_MetallicTexture";
+
+                        Texture* metallicTexture =
+                            LoadMaterialTexture(
+                                scene,
+                                metallicTexturePath,
+                                modelDirectory,
+                                metallicTextureName);
+
+                        if (metallicTexture)
+                        {
+                            material->SetMetallicTexture(
+                                metallicTexture);
+
+                            std::cout
+                                << "Metallic map asignado al material: "
+                                << metallicTextureName
+                                << '\n';
+                        }
+                    }
+
+                    // --------------------------------------------
+                    // ROUGHNESS TEXTURE
+                    // --------------------------------------------
+
+                    aiString roughnessTexturePath;
+
+                    if (aiMat->GetTexture(
+                            aiTextureType_DIFFUSE_ROUGHNESS,
+                            0,
+                            &roughnessTexturePath)
+                        == AI_SUCCESS)
+                    {
+                        const std::string roughnessTextureName =
+                            std::string("Model_") +
+                            materialName.C_Str() +
+                            "_RoughnessTexture";
+
+                        Texture* roughnessTexture =
+                            LoadMaterialTexture(
+                                scene,
+                                roughnessTexturePath,
+                                modelDirectory,
+                                roughnessTextureName);
+
+                        if (roughnessTexture)
+                        {
+                            material->SetRoughnessTexture(
+                                roughnessTexture);
+
+                            std::cout
+                                << "Roughness map asignado al material: "
+                                << roughnessTextureName
+                                << '\n';
+                        }
+                    }
+
+                    // --------------------------------------------
+                    // PACKED METALLIC ROUGHNESS TEXTURE
+                    // --------------------------------------------
+
+                    if (metallicTexturePath.length > 0 &&
+                        roughnessTexturePath.length > 0)
+                    {
+                        const std::string metallicPath =
+                            metallicTexturePath.C_Str();
+
+                        const std::string roughnessPath =
+                            roughnessTexturePath.C_Str();
+
+                        if (metallicPath ==
+                            roughnessPath)
+                        {
+                            material->SetPackedMetallicRoughness(
+                                true);
+
+                            std::cout
+                                << "Metallic/Roughness empaquetados detectados: "
+                                << metallicPath
+                                << '\n';
+                        }
+                    }
+
+                    // --------------------------------------------
+                    // AO TEXTURE
+                    // --------------------------------------------
+
+                    aiString aoTexturePath;
+
+                    bool hasAOTexture =
+                        aiMat->GetTexture(
+                            aiTextureType_AMBIENT_OCCLUSION,
+                            0,
+                            &aoTexturePath)
+                        == AI_SUCCESS;
+
+                    if (!hasAOTexture)
+                    {
+                        hasAOTexture =
+                            aiMat->GetTexture(
+                                aiTextureType_LIGHTMAP,
+                                0,
+                                &aoTexturePath)
+                            == AI_SUCCESS;
+
+                        if (hasAOTexture)
+                        {
+                            std::cout
+                                << "AO map detectado como LIGHTMAP: "
+                                << aoTexturePath.C_Str()
+                                << '\n';
+                        }
+                    }
+
+                    if (hasAOTexture)
+                    {
+                        const std::string aoTextureName =
+                            std::string("Model_") +
+                            materialName.C_Str() +
+                            "_AOTexture";
+
+                        Texture* aoTexture =
+                            LoadMaterialTexture(
+                                scene,
+                                aoTexturePath,
+                                modelDirectory,
+                                aoTextureName);
+
+                        if (aoTexture)
+                        {
+                            material->SetAOTexture(
+                                aoTexture);
+
+                            std::cout
+                                << "AO map asignado al material: "
+                                << aoTextureName
+                                << '\n';
+                        }
+                        else
+                        {
+                            std::cerr
+                                << "ERROR cargando AO map: "
+                                << aoTexturePath.C_Str()
                                 << '\n';
                         }
                     }
