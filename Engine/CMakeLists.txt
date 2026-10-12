@@ -23,6 +23,7 @@ add_library(Engine STATIC
     src/Renderer/ShadowMap.cpp
     src/Renderer/Cubemap.cpp
     src/Renderer/BRDFLUT.cpp
+    src/Renderer/Frustum.cpp
 
     src/Math/Matrix4.cpp
     src/Math/Transform.cpp

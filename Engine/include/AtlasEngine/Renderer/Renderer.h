@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "AtlasEngine/Renderer/Framebuffer.h"
+#include "AtlasEngine/Renderer/RenderStats.h"
 
 namespace AtlasEngine
 {
@@ -76,6 +77,34 @@ public:
 
     static BRDFLUT* GetBRDFLUT();
 
+    static const RenderStats& GetStats();
+
+    static void ResetStats();
+
+    static void SubmitSceneDraw(
+        uint32_t vertexCount,
+        uint32_t indexCount);
+
+    static void SubmitShadowDraw(
+        uint32_t vertexCount,
+        uint32_t indexCount);
+
+    static void SubmitPostProcessDraw();
+
+    static void SubmitSkyboxDraw();
+
+    static void SetBloomBlurPasses(
+        int passes);
+
+    static int GetBloomBlurPasses();
+
+    static void SubmitObject();
+
+    static void SubmitCulledObject();
+
+    static void SubmitSceneShaderBind();
+    static void SubmitSceneMaterialBind();
+
 private:
 
     static std::unique_ptr<Framebuffer> s_Framebuffer;
@@ -99,6 +128,10 @@ private:
     static float s_BloomStrength;
 
     static float s_BloomThreshold;
+
+    static RenderStats s_RenderStats;
+
+    static int s_BloomBlurPasses;
 };
 
 }

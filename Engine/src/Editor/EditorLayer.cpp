@@ -192,8 +192,12 @@ void EditorLayer::OnImGuiRender()
     const float toolbarHeight = 40.0f;
     const float hierarchyWidth = 250.0f;
     const float inspectorWidth = 320.0f;
-    const float statsHeight = 120.0f;
     const float assetBrowserHeight = 220.0f;
+
+    static bool statisticsExpanded = true;
+
+    const float statsHeight =
+        statisticsExpanded ? 300.0f : 36.0f;
 
     ImVec2 display =
         ImGui::GetIO().DisplaySize;
@@ -213,6 +217,11 @@ void EditorLayer::OnImGuiRender()
         display.y -
         toolbarHeight -
         statsHeight;
+
+    if (viewportHeight < 1.0f)
+    {
+        viewportHeight = 1.0f;
+    }
 
     // ----------------------------------------------------
     // TOOLBAR
@@ -601,6 +610,19 @@ void EditorLayer::OnImGuiRender()
                 bloomThreshold);
         }
 
+        int bloomBlurPasses =
+            Renderer::GetBloomBlurPasses();
+
+        if (ImGui::SliderInt(
+                "Bloom Blur Passes",
+                &bloomBlurPasses,
+                1,
+                20))
+        {
+            Renderer::SetBloomBlurPasses(
+                bloomBlurPasses);
+        }
+
 
         bool vignetteEnabled =
             Renderer::IsVignetteEnabled();
@@ -664,35 +686,161 @@ void EditorLayer::OnImGuiRender()
 
     m_AssetBrowser.OnImGuiRender();
 
-    // ----------------------------------------------------
-    // STATISTICS
-    // ----------------------------------------------------
+        // ----------------------------------------------------
+        // RENDER STATISTICS
+        // ----------------------------------------------------
 
-    ImGui::SetNextWindowPos(
-        ImVec2(
-            hierarchyWidth,
-            display.y -
+        ImGui::SetNextWindowPos(
+            ImVec2(
+                hierarchyWidth,
+                display.y - statsHeight),
+            ImGuiCond_Always);
+
+        ImGui::SetNextWindowSize(
+            ImVec2(
+                viewportWidth,
                 statsHeight),
-        ImGuiCond_Always);
+            ImGuiCond_Always);
 
-    ImGui::SetNextWindowSize(
-        ImVec2(
-            viewportWidth,
-            statsHeight),
-        ImGuiCond_Always);
+            const bool statisticsVisible =
+            ImGui::Begin(
+                "Render Statistics",
+                nullptr,
+                ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_NoResize |
+                ImGuiWindowFlags_NoSavedSettings);
 
-    ImGui::Begin("Statistics");
+        statisticsExpanded =
+            !ImGui::IsWindowCollapsed();
 
-    ImGui::Text(
-        "FPS: %.1f",
-        ImGui::GetIO().Framerate);
+        if (statisticsVisible)
+        {
+            const RenderStats& stats =
+                Renderer::GetStats();
 
-    ImGui::Text(
-        "Frame Time: %.3f ms",
-        1000.0f /
-            ImGui::GetIO().Framerate);
+            const float fps =
+                ImGui::GetIO().Framerate;
 
-    ImGui::End();
+            const float frameTimeMs =
+                fps > 0.0f
+                    ? 1000.0f / fps
+                    : 0.0f;
+
+            ImGui::Text("FPS: %.1f", fps);
+
+            ImGui::Text(
+                "Frame time: %.3f ms",
+                frameTimeMs);
+
+                const auto& hdrFramebuffer =
+                        Renderer::GetHDRFramebuffer();
+
+                    ImGui::Text(
+                        "Render resolution: %u x %u",
+                        static_cast<unsigned int>(
+                            hdrFramebuffer.GetWidth()),
+                        static_cast<unsigned int>(
+                            hdrFramebuffer.GetHeight()));
+
+                #ifdef NDEBUG
+                            ImGui::Text("NDEBUG: enabled");
+                #else
+                            ImGui::Text("NDEBUG: disabled");
+                #endif
+
+            ImGui::Separator();
+
+            if (ImGui::CollapsingHeader(
+                    "Draw calls",
+                    ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::Text(
+                    "Total: %u",
+                    stats.DrawCalls);
+
+                ImGui::Text(
+                    "Scene: %u",
+                    stats.SceneDrawCalls);
+
+                ImGui::Text(
+                    "Shadows: %u",
+                    stats.ShadowDrawCalls);
+
+                ImGui::Text(
+                    "Skybox: %u",
+                    stats.SkyboxDrawCalls);
+
+                ImGui::Text(
+                    "Post process: %u",
+                    stats.PostProcessDrawCalls);
+            }
+
+            if (ImGui::CollapsingHeader(
+                    "Scene state bindings",
+                    ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::Text(
+                    "Shader binds: %u",
+                    stats.SceneShaderBinds);
+
+                ImGui::Text(
+                    "Material binds: %u",
+                    stats.SceneMaterialBinds);
+
+                ImGui::TextWrapped(
+                    "Main pass only. Includes the first bind.");
+
+                ImGui::TextWrapped(
+                    "One material bind is one BindMaterial call.");
+            }
+
+            if (ImGui::CollapsingHeader(
+                    "Visibility",
+                    ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::Text(
+                    "Submitted candidates: %u",
+                    stats.SubmittedObjects);
+
+                ImGui::Text(
+                    "Culled candidates: %u",
+                    stats.CulledObjects);
+
+                ImGui::Text(
+                    "Scene mesh draws: %u",
+                    stats.RenderedObjects);
+
+                ImGui::TextWrapped(
+                    "A model counts as one candidate, "
+                    "but may produce several mesh draws.");
+            }
+
+            if (ImGui::CollapsingHeader(
+                    "Geometry",
+                    ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::Text(
+                    "Vertices: %llu",
+                    static_cast<unsigned long long>(
+                        stats.Vertices));
+
+                ImGui::Text(
+                    "Indices: %llu",
+                    static_cast<unsigned long long>(
+                        stats.Indices));
+
+                ImGui::Text(
+                    "Triangles: %llu",
+                    static_cast<unsigned long long>(
+                        stats.Triangles));
+
+                ImGui::TextWrapped(
+                    "Scene and shadow passes combined. "
+                    "Excludes skybox and post-process geometry.");
+            }
+        }
+
+        ImGui::End();
 }
 
 void EditorLayer::SetContext(Scene* scene)

@@ -4,6 +4,11 @@
 #include "AtlasEngine/Math/Matrix4.h"
 #include "AtlasEngine/Math/Vector3.h"
 #include "AtlasEngine/Renderer/ShadowMap.h"
+#include "AtlasEngine/Renderer/Frustum.h"
+#include "AtlasEngine/Renderer/RenderItem.h"
+
+#include <vector>
+#include <cstdint>
 
 namespace AtlasEngine
 {
@@ -12,6 +17,8 @@ class Shader;
 class Material;
 class Cubemap;
 class BRDFLUT;
+class Mesh;
+class Scene;
 
 class DirectionalLightComponent;
 class AmbientLightComponent;
@@ -62,6 +69,39 @@ private:
         BRDFLUT* brdfLUT);
 
 
+    bool CalculateWorldBounds(
+        const Vector3& localMin,
+        const Vector3& localMax,
+        const Matrix4& worldMatrix,
+        Vector3& worldMin,
+        Vector3& worldMax) const;
+
+
+    void BuildRenderQueue(
+        Scene& scene,
+        const Frustum& cameraFrustum);
+
+
+    void SortRenderQueue();
+
+
+    void ExecuteRenderQueue(
+        const Matrix4& view,
+        const Matrix4& projection,
+        const Matrix4& lightSpaceMatrix,
+        const Vector3& cameraPosition,
+        DirectionalLightComponent* directionalLight,
+        AmbientLightComponent* ambientLight,
+        PointLightComponent* const* pointLights,
+        const Vector3* pointLightPositions,
+        int pointLightCount,
+        SpotLightComponent* spotLight,
+        const Vector3& spotLightPosition,
+        Cubemap* irradianceMap,
+        Cubemap* prefilterMap,
+        BRDFLUT* brdfLUT);
+
+
 private:
 
     bool m_UseViewProjectionOverride =
@@ -106,6 +146,10 @@ private:
 
     float m_ShadowLightDistance =
         10.0f;
+
+
+    std::vector<RenderItem>
+        m_RenderQueue;
 };
 
 }

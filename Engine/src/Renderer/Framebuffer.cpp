@@ -51,7 +51,14 @@ void Framebuffer::Resize(
     unsigned int height)
 {
     if (width == 0 || height == 0)
+    {
         return;
+    }
+
+    if (width == m_Width && height == m_Height)
+    {
+        return;
+    }
 
     m_Width = width;
     m_Height = height;

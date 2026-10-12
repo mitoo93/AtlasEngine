@@ -23,6 +23,8 @@
 
 #include <cmath>
 #include <string>
+#include <algorithm>
+#include <functional>
 
 
 namespace AtlasEngine
@@ -105,6 +107,19 @@ void RenderSystem::Update(
             camera->GetCamera()
                 .GetProjectionMatrix();
     }
+
+    // ----------------------------------------------------
+    // CAMERA FRUSTUM
+    // ----------------------------------------------------
+
+    Matrix4 viewProjection =
+        projection *
+        view;
+
+    Frustum cameraFrustum;
+
+    cameraFrustum.Update(
+        viewProjection);
 
 
     // ====================================================
@@ -419,11 +434,14 @@ void RenderSystem::Update(
                 continue;
             }
 
+            const Matrix4 modelMatrix =
+                entity->GetTransform()
+                    .GetWorldMatrix();
+
 
             shadowShader->SetMatrix4(
                 "u_Model",
-                entity->GetTransform()
-                    .GetWorldMatrix());
+                modelMatrix);
 
 
             // --------------------------------------------
@@ -440,11 +458,15 @@ void RenderSystem::Update(
                 Mesh* mesh =
                     meshRenderer.GetMesh();
 
-
                 if (mesh)
                 {
+                    Renderer::SubmitShadowDraw(
+                        mesh->GetVertexCount(),
+                        mesh->GetIndexCount());
+
                     mesh->Draw();
                 }
+
             }
 
 
@@ -462,12 +484,10 @@ void RenderSystem::Update(
                 Model* model =
                     modelRenderer.GetModel();
 
-
                 if (!model)
                 {
                     continue;
                 }
-
 
                 for (const auto& meshPtr :
                      model->GetMeshes())
@@ -477,7 +497,10 @@ void RenderSystem::Update(
                         continue;
                     }
 
-
+                    Renderer::SubmitShadowDraw(
+                        meshPtr->GetVertexCount(),
+                        meshPtr->GetIndexCount());
+                    
                     meshPtr->Draw();
                 }
             }
@@ -486,296 +509,38 @@ void RenderSystem::Update(
 
         m_ShadowMap.Unbind();
 
-
-        Renderer::GetHDRFramebuffer()
-            .Bind();
     }
 
 
-    // ====================================================
-    // MAIN RENDER PASS
-    // ====================================================
-
-    for (const auto& entity :
-         scene.GetEntities())
-    {
-        if (!entity)
-        {
-            continue;
-        }
-
-
-        const bool hasMeshRenderer =
-            entity->HasComponent<
-                MeshRendererComponent>();
-
-
-        const bool hasModelRenderer =
-            entity->HasComponent<
-                ModelRendererComponent>();
-
-
-        if (!hasMeshRenderer &&
-            !hasModelRenderer)
-        {
-            continue;
-        }
-
-
-        const Matrix4 modelMatrix =
-            entity->GetTransform()
-                .GetWorldMatrix();
-
-
-        // =================================================
-        // MESH RENDERER
-        // =================================================
-
-        if (hasMeshRenderer)
-        {
-            if (!entity->HasComponent<
-                    MaterialComponent>())
-            {
-                continue;
-            }
-
-
-            MeshRendererComponent& meshRenderer =
-                entity->GetComponent<
-                    MeshRendererComponent>();
-
-
-            Mesh* mesh =
-                meshRenderer.GetMesh();
-
-
-            if (!mesh)
-            {
-                continue;
-            }
-
-
-            MaterialComponent& materialComponent =
-                entity->GetComponent<
-                    MaterialComponent>();
-
-
-            Material* material =
-                materialComponent.GetMaterial();
-
-
-            if (!material)
-            {
-                continue;
-            }
-
-
-            Shader* shader =
-                material->GetShader();
-
-
-            if (!shader)
-            {
-                continue;
-            }
-
-
-            shader->Bind();
-
-
-            // --------------------------------------------
-            // TRANSFORMS
-            // --------------------------------------------
-
-            shader->SetMatrix4(
-                "u_Model",
-                modelMatrix);
-
-
-            shader->SetMatrix4(
-                "u_View",
-                view);
-
-
-            shader->SetMatrix4(
-                "u_Projection",
-                projection);
-
-
-            shader->SetMatrix4(
-                "u_LightSpaceMatrix",
-                lightSpaceMatrix);
-
-
-            // --------------------------------------------
-            // MATERIAL
-            // --------------------------------------------
-
-            BindMaterial(
-                *shader,
-                *material);
-
-
-            // --------------------------------------------
-            // LIGHTS
-            // --------------------------------------------
-
-            BindLights(
-                *shader,
-                directionalLight,
-                ambientLight,
-                pointLights,
-                pointLightPositions,
-                pointLightCount,
-                spotLight,
-                spotLightPosition,
-                cameraPosition);
-
-
-            // --------------------------------------------
-            // SHADOW + IBL
-            // --------------------------------------------
-
-            BindShadowAndIBL(
-                *shader,
-                irradianceMap,
-                prefilterMap,
-                brdfLUT);
-
-
-            // --------------------------------------------
-            // DRAW
-            // --------------------------------------------
-
-            mesh->Draw();
-        }
-
-
-        // =================================================
-        // MODEL RENDERER
-        // =================================================
-
-        if (hasModelRenderer)
-        {
-            ModelRendererComponent& modelRenderer =
-                entity->GetComponent<
-                    ModelRendererComponent>();
-
-
-            Model* model =
-                modelRenderer.GetModel();
-
-
-            if (!model)
-            {
-                continue;
-            }
-
-
-            for (const auto& meshPtr :
-                 model->GetMeshes())
-            {
-                if (!meshPtr)
-                {
-                    continue;
-                }
-
-
-                Mesh* mesh =
-                    meshPtr.get();
-
-
-                Material* material =
-                    mesh->GetMaterial();
-
-
-                if (!material)
-                {
-                    continue;
-                }
-
-
-                Shader* shader =
-                    material->GetShader();
-
-
-                if (!shader)
-                {
-                    continue;
-                }
-
-
-                shader->Bind();
-
-
-                // ----------------------------------------
-                // TRANSFORMS
-                // ----------------------------------------
-
-                shader->SetMatrix4(
-                    "u_Model",
-                    modelMatrix);
-
-
-                shader->SetMatrix4(
-                    "u_View",
-                    view);
-
-
-                shader->SetMatrix4(
-                    "u_Projection",
-                    projection);
-
-
-                shader->SetMatrix4(
-                    "u_LightSpaceMatrix",
-                    lightSpaceMatrix);
-
-
-                // ----------------------------------------
-                // MATERIAL
-                // ----------------------------------------
-
-                BindMaterial(
-                    *shader,
-                    *material);
-
-
-                // ----------------------------------------
-                // LIGHTS
-                // ----------------------------------------
-
-                BindLights(
-                    *shader,
-                    directionalLight,
-                    ambientLight,
-                    pointLights,
-                    pointLightPositions,
-                    pointLightCount,
-                    spotLight,
-                    spotLightPosition,
-                    cameraPosition);
-
-
-                // ----------------------------------------
-                // SHADOW + IBL
-                // ----------------------------------------
-
-                BindShadowAndIBL(
-                    *shader,
-                    irradianceMap,
-                    prefilterMap,
-                    brdfLUT);
-
-
-                // ----------------------------------------
-                // DRAW
-                // ----------------------------------------
-
-                mesh->Draw();
-            }
-        }
-    }
+        // ====================================================
+        // MAIN RENDER PASS
+        // ====================================================
+
+        // Restaura el framebuffer HDR y su viewport.
+        // Es necesario también cuando no hubo shadow pass.
+        Renderer::GetHDRFramebuffer().Bind();
+
+        BuildRenderQueue(
+            scene,
+            cameraFrustum);
+
+        SortRenderQueue();
+
+        ExecuteRenderQueue(
+            view,
+            projection,
+            lightSpaceMatrix,
+            cameraPosition,
+            directionalLight,
+            ambientLight,
+            pointLights,
+            pointLightPositions,
+            pointLightCount,
+            spotLight,
+            spotLightPosition,
+            irradianceMap,
+            prefilterMap,
+            brdfLUT);
 
 
     // ====================================================
@@ -840,6 +605,8 @@ void RenderSystem::Update(
             "u_Skybox",
             0);
 
+
+        Renderer::SubmitSkyboxDraw();
 
         skyboxMesh->Draw();
 
@@ -1423,5 +1190,322 @@ void RenderSystem::ClearViewProjection()
         false;
 }
 
+bool RenderSystem::CalculateWorldBounds(
+    const Vector3& localMin,
+    const Vector3& localMax,
+    const Matrix4& worldMatrix,
+    Vector3& worldMin,
+    Vector3& worldMax) const
+{
+    const Vector3 corners[8]
+    {
+        { localMin.x, localMin.y, localMin.z },
+        { localMax.x, localMin.y, localMin.z },
+        { localMin.x, localMax.y, localMin.z },
+        { localMax.x, localMax.y, localMin.z },
+        { localMin.x, localMin.y, localMax.z },
+        { localMax.x, localMin.y, localMax.z },
+        { localMin.x, localMax.y, localMax.z },
+        { localMax.x, localMax.y, localMax.z }
+    };
+
+    worldMin = worldMatrix.TransformPoint(corners[0]);
+    worldMax = worldMin;
+
+    for (int i = 1; i < 8; ++i)
+    {
+        const Vector3 worldCorner =
+            worldMatrix.TransformPoint(corners[i]);
+
+        worldMin.x = std::min(worldMin.x, worldCorner.x);
+        worldMin.y = std::min(worldMin.y, worldCorner.y);
+        worldMin.z = std::min(worldMin.z, worldCorner.z);
+
+        worldMax.x = std::max(worldMax.x, worldCorner.x);
+        worldMax.y = std::max(worldMax.y, worldCorner.y);
+        worldMax.z = std::max(worldMax.z, worldCorner.z);
+    }
+
+    return true;
+}
+
+void RenderSystem::BuildRenderQueue(
+    Scene& scene,
+    const Frustum& cameraFrustum)
+{
+    m_RenderQueue.clear();
+
+    for (const auto& entity : scene.GetEntities())
+    {
+        if (!entity)
+        {
+            continue;
+        }
+
+        const bool hasMeshRenderer =
+            entity->HasComponent<MeshRendererComponent>();
+
+        const bool hasModelRenderer =
+            entity->HasComponent<ModelRendererComponent>();
+
+        if (!hasMeshRenderer && !hasModelRenderer)
+        {
+            continue;
+        }
+
+        const Matrix4 modelMatrix =
+            entity->GetTransform().GetWorldMatrix();
+
+        const auto isVisible =
+            [&](const Vector3& localMin,
+                const Vector3& localMax)
+            {
+                Vector3 worldMin;
+                Vector3 worldMax;
+
+                CalculateWorldBounds(
+                    localMin,
+                    localMax,
+                    modelMatrix,
+                    worldMin,
+                    worldMax);
+
+                return cameraFrustum.IntersectsAABB(
+                    worldMin,
+                    worldMax);
+            };
+
+        const auto enqueue =
+            [&](Mesh* mesh, Material* material, Shader* shader)
+            {
+                RenderItem item;
+
+                item.MeshPtr = mesh;
+                item.MaterialPtr = material;
+                item.ShaderPtr = shader;
+                item.ModelMatrix = modelMatrix;
+
+                m_RenderQueue.push_back(item);
+            };
+
+        // ------------------------------------------------
+        // MESH RENDERER
+        // ------------------------------------------------
+
+        if (hasMeshRenderer)
+        {
+            const auto processMeshRenderer = [&]()
+            {
+                Mesh* mesh =
+                    entity->GetComponent<MeshRendererComponent>()
+                        .GetMesh();
+
+                if (!mesh ||
+                    !entity->HasComponent<MaterialComponent>())
+                {
+                    return;
+                }
+
+                Material* material =
+                    entity->GetComponent<MaterialComponent>()
+                        .GetMaterial();
+
+                if (!material)
+                {
+                    return;
+                }
+
+                Shader* shader = material->GetShader();
+
+                if (!shader)
+                {
+                    return;
+                }
+
+                Renderer::SubmitObject();
+
+                if (!isVisible(
+                        mesh->GetBoundsMin(),
+                        mesh->GetBoundsMax()))
+                {
+                    Renderer::SubmitCulledObject();
+                    return;
+                }
+
+                enqueue(mesh, material, shader);
+            };
+
+            processMeshRenderer();
+        }
+
+        // ------------------------------------------------
+        // MODEL RENDERER
+        // ------------------------------------------------
+
+        if (hasModelRenderer)
+        {
+            const auto processModelRenderer = [&]()
+            {
+                Model* model =
+                    entity->GetComponent<ModelRendererComponent>()
+                        .GetModel();
+
+                if (!model)
+                {
+                    return;
+                }
+
+                Renderer::SubmitObject();
+
+                if (!isVisible(
+                        model->GetBoundsMin(),
+                        model->GetBoundsMax()))
+                {
+                    Renderer::SubmitCulledObject();
+                    return;
+                }
+
+                for (const auto& meshPtr : model->GetMeshes())
+                {
+                    if (!meshPtr)
+                    {
+                        continue;
+                    }
+
+                    Mesh* mesh = meshPtr.get();
+
+                    Material* material = mesh->GetMaterial();
+
+                    if (!material)
+                    {
+                        continue;
+                    }
+
+                    Shader* shader = material->GetShader();
+
+                    if (!shader)
+                    {
+                        continue;
+                    }
+
+                    enqueue(mesh, material, shader);
+                }
+            };
+
+            processModelRenderer();
+        }
+    }
+}
+
+void RenderSystem::SortRenderQueue()
+{
+    std::stable_sort(
+        m_RenderQueue.begin(),
+        m_RenderQueue.end(),
+        [](const RenderItem& a, const RenderItem& b)
+        {
+            if (a.ShaderPtr != b.ShaderPtr)
+            {
+                return std::less<Shader*>{}(
+                    a.ShaderPtr,
+                    b.ShaderPtr);
+            }
+
+            return std::less<Material*>{}(
+                a.MaterialPtr,
+                b.MaterialPtr);
+        });
+}
+
+void RenderSystem::ExecuteRenderQueue(
+    const Matrix4& view,
+    const Matrix4& projection,
+    const Matrix4& lightSpaceMatrix,
+    const Vector3& cameraPosition,
+    DirectionalLightComponent* directionalLight,
+    AmbientLightComponent* ambientLight,
+    PointLightComponent* const* pointLights,
+    const Vector3* pointLightPositions,
+    int pointLightCount,
+    SpotLightComponent* spotLight,
+    const Vector3& spotLightPosition,
+    Cubemap* irradianceMap,
+    Cubemap* prefilterMap,
+    BRDFLUT* brdfLUT)
+{
+    Shader* currentShader = nullptr;
+    Material* currentMaterial = nullptr;
+
+    for (const RenderItem& item : m_RenderQueue)
+    {
+        if (!item.MeshPtr ||
+            !item.MaterialPtr ||
+            !item.ShaderPtr)
+        {
+            continue;
+        }
+
+        Shader& shader = *item.ShaderPtr;
+
+        if (item.ShaderPtr != currentShader)
+        {
+            shader.Bind();
+            Renderer::SubmitSceneShaderBind();
+
+            shader.SetMatrix4(
+                "u_View",
+                view);
+
+            shader.SetMatrix4(
+                "u_Projection",
+                projection);
+
+            shader.SetMatrix4(
+                "u_LightSpaceMatrix",
+                lightSpaceMatrix);
+
+            BindLights(
+                shader,
+                directionalLight,
+                ambientLight,
+                pointLights,
+                pointLightPositions,
+                pointLightCount,
+                spotLight,
+                spotLightPosition,
+                cameraPosition);
+
+            BindShadowAndIBL(
+                shader,
+                irradianceMap,
+                prefilterMap,
+                brdfLUT);
+
+            currentShader = item.ShaderPtr;
+            currentMaterial = nullptr;
+        }
+
+        if (item.MaterialPtr != currentMaterial)
+        {
+            BindMaterial(
+                shader,
+                *item.MaterialPtr);
+
+            Renderer::SubmitSceneMaterialBind();
+
+            currentMaterial = item.MaterialPtr;
+        }
+
+        shader.SetMatrix4(
+            "u_Model",
+            item.ModelMatrix);
+
+        item.MeshPtr->Draw();
+
+        Renderer::SubmitSceneDraw(
+            item.MeshPtr->GetVertexCount(),
+            item.MeshPtr->GetIndexCount());
+    }
+}
 
 }

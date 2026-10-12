@@ -40,6 +40,10 @@ float Renderer::s_BloomStrength =
 float Renderer::s_BloomThreshold =
     1.0f;
 
+RenderStats Renderer::s_RenderStats;
+
+int Renderer::s_BloomBlurPasses = 5;
+
 void Renderer::InitFramebuffer(
     uint32_t width,
     uint32_t height)
@@ -136,6 +140,8 @@ Framebuffer& Renderer::GetHDRFramebuffer()
 
 void Renderer::BeginFrame()
 {
+    ResetStats();
+    
     s_HDRFramebuffer->Bind();
 
     glViewport(
@@ -241,6 +247,8 @@ void Renderer::EndFrame()
             s_BloomThreshold);
 
 
+        Renderer::SubmitPostProcessDraw();
+
         fullscreenQuad->Draw();
 
 
@@ -265,7 +273,7 @@ void Renderer::EndFrame()
             true;
 
         const int blurPasses =
-            10;
+            s_BloomBlurPasses;
 
 
         for (int i = 0;
@@ -329,6 +337,8 @@ void Renderer::EndFrame()
                         ->GetColorAttachment());
             }
 
+
+            Renderer::SubmitPostProcessDraw();
 
             fullscreenQuad->Draw();
 
@@ -404,6 +414,8 @@ void Renderer::EndFrame()
             s_BloomStrength);
 
 
+        Renderer::SubmitPostProcessDraw();
+
         fullscreenQuad->Draw();
     }
 
@@ -472,6 +484,8 @@ void Renderer::EndFrame()
         "u_VignetteStrength",
         s_VignetteStrength);
 
+
+    Renderer::SubmitPostProcessDraw();
 
     fullscreenQuad->Draw();
 
@@ -742,6 +756,121 @@ BRDFLUT* Renderer::GetBRDFLUT()
 {
     return
         s_BRDFLUT.get();
+}
+
+const RenderStats& Renderer::GetStats()
+{
+    return s_RenderStats;
+}
+
+
+void Renderer::ResetStats()
+{
+    s_RenderStats.Reset();
+}
+
+
+void Renderer::SubmitSceneDraw(
+    uint32_t vertexCount,
+    uint32_t indexCount)
+{
+    ++s_RenderStats.DrawCalls;
+    ++s_RenderStats.SceneDrawCalls;
+
+    s_RenderStats.Vertices +=
+        vertexCount;
+
+    s_RenderStats.Indices +=
+        indexCount;
+
+    if (indexCount > 0)
+    {
+        s_RenderStats.Triangles +=
+            indexCount / 3;
+    }
+    else
+    {
+        s_RenderStats.Triangles +=
+            vertexCount / 3;
+    }
+
+    ++s_RenderStats.RenderedObjects;
+}
+
+
+void Renderer::SubmitShadowDraw(
+    uint32_t vertexCount,
+    uint32_t indexCount)
+{
+    ++s_RenderStats.DrawCalls;
+    ++s_RenderStats.ShadowDrawCalls;
+
+    s_RenderStats.Vertices +=
+        vertexCount;
+
+    s_RenderStats.Indices +=
+        indexCount;
+
+    if (indexCount > 0)
+    {
+        s_RenderStats.Triangles +=
+            indexCount / 3;
+    }
+    else
+    {
+        s_RenderStats.Triangles +=
+            vertexCount / 3;
+    }
+}
+
+
+void Renderer::SubmitPostProcessDraw()
+{
+    ++s_RenderStats.DrawCalls;
+    ++s_RenderStats.PostProcessDrawCalls;
+}
+
+void Renderer::SubmitSkyboxDraw()
+{
+    ++s_RenderStats.DrawCalls;
+
+    ++s_RenderStats.SkyboxDrawCalls;
+}
+
+void Renderer::SetBloomBlurPasses(
+    int passes)
+{
+    s_BloomBlurPasses =
+        std::max(
+            1,
+            passes);
+}
+
+
+int Renderer::GetBloomBlurPasses()
+{
+    return s_BloomBlurPasses;
+}
+
+void Renderer::SubmitObject()
+{
+    ++s_RenderStats.SubmittedObjects;
+}
+
+
+void Renderer::SubmitCulledObject()
+{
+    ++s_RenderStats.CulledObjects;
+}
+
+void Renderer::SubmitSceneShaderBind()
+{
+    ++s_RenderStats.SceneShaderBinds;
+}
+
+void Renderer::SubmitSceneMaterialBind()
+{
+    ++s_RenderStats.SceneMaterialBinds;
 }
 
 }

@@ -21,6 +21,14 @@ bool Mesh::Create(
     const std::vector<unsigned int>& indices,
     const BufferLayout& layout)
 {
+    m_VertexCount =
+        static_cast<uint32_t>(
+            vertices.size());
+
+    m_IndexCount =
+        static_cast<uint32_t>(
+            indices.size());
+    
     m_VertexArray.Create();
 
     // IMPORTANTE:

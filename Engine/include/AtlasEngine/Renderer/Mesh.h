@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <string>
+#include <cstdint>
 
 namespace AtlasEngine
 {
@@ -51,6 +52,16 @@ public:
 
     const Vector3& GetBoundsMax() const;
 
+    uint32_t GetVertexCount() const
+    {
+        return m_VertexCount;
+    }
+
+    uint32_t GetIndexCount() const
+    {
+        return m_IndexCount;
+    }
+
 private:
 
     VertexArray m_VertexArray;
@@ -74,6 +85,9 @@ private:
         0.0f,
         0.0f
     };
+
+    uint32_t m_VertexCount = 0;
+    uint32_t m_IndexCount = 0;
 };
 
 }
