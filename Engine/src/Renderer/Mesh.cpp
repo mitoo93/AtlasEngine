@@ -4,6 +4,7 @@
 #include "AtlasEngine/Renderer/Material.h"
 
 #include <iostream>
+#include <limits>
 
 namespace AtlasEngine
 {
@@ -14,6 +15,12 @@ Mesh::Mesh()
 
 Mesh::~Mesh()
 {
+    if (m_InstanceBuffer)
+    {
+        glDeleteBuffers(
+            1,
+            &m_InstanceBuffer);
+    }
 }
 
 bool Mesh::Create(
@@ -73,6 +80,116 @@ void Mesh::Draw() const
         m_IndexBuffer.GetCount(),
         GL_UNSIGNED_INT,
         nullptr);
+}
+
+bool Mesh::DrawInstanced(
+    const std::vector<float>& instanceMatrices)
+{
+    constexpr std::size_t floatsPerMatrix = 16;
+
+    if (instanceMatrices.empty() ||
+        instanceMatrices.size() % floatsPerMatrix != 0)
+    {
+        return false;
+    }
+
+    const std::size_t instanceCount =
+        instanceMatrices.size() / floatsPerMatrix;
+
+    if (instanceCount >
+        static_cast<std::size_t>(
+            (std::numeric_limits<GLsizei>::max)()))
+    {
+        return false;
+    }
+
+    if (instanceMatrices.size() >
+        static_cast<std::size_t>(
+            (std::numeric_limits<GLsizeiptr>::max)()) /
+            sizeof(float))
+    {
+        return false;
+    }
+
+    if (!m_InstanceBuffer)
+    {
+        glGenBuffers(
+            1,
+            &m_InstanceBuffer);
+
+        if (!m_InstanceBuffer)
+        {
+            return false;
+        }
+    }
+
+    Bind();
+
+    glBindBuffer(
+        GL_ARRAY_BUFFER,
+        m_InstanceBuffer);
+
+    const GLsizeiptr byteSize =
+        static_cast<GLsizeiptr>(
+            instanceMatrices.size() * sizeof(float));
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        byteSize,
+        instanceMatrices.data(),
+        GL_STREAM_DRAW);
+
+    const GLsizei stride =
+        static_cast<GLsizei>(
+            floatsPerMatrix * sizeof(float));
+
+    for (GLuint column = 0; column < 4; ++column)
+    {
+        const GLuint location = 5 + column;
+
+        const std::uintptr_t offset =
+            column * 4 * sizeof(float);
+
+        glEnableVertexAttribArray(location);
+
+        glVertexAttribPointer(
+            location,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            stride,
+            reinterpret_cast<const void*>(offset));
+
+        glVertexAttribDivisor(
+            location,
+            1);
+    }
+
+    glDrawElementsInstanced(
+        GL_TRIANGLES,
+        m_IndexBuffer.GetCount(),
+        GL_UNSIGNED_INT,
+        nullptr,
+        static_cast<GLsizei>(instanceCount));
+
+    // Restaura los atributos para dibujos individuales
+    // y para otros pases que utilicen esta misma Mesh.
+    for (GLuint column = 0; column < 4; ++column)
+    {
+        const GLuint location = 5 + column;
+
+        glDisableVertexAttribArray(location);
+
+        glVertexAttribDivisor(
+            location,
+            0);
+    }
+
+    glBindBuffer(
+        GL_ARRAY_BUFFER,
+        0);
+
+    return true;
 }
 
 void Mesh::SetName(

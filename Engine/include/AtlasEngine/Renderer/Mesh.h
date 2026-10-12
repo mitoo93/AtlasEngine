@@ -32,6 +32,9 @@ public:
 
     void Draw() const;
 
+    bool DrawInstanced(
+        const std::vector<float>& instanceMatrices);
+
     void SetName(
         const std::string& name);
 
@@ -88,6 +91,8 @@ private:
 
     uint32_t m_VertexCount = 0;
     uint32_t m_IndexCount = 0;
+
+    unsigned int m_InstanceBuffer = 0;
 };
 
 }

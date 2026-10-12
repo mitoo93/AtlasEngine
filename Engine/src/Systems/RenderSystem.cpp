@@ -390,126 +390,187 @@ void RenderSystem::Update(
         Renderer::GetBRDFLUT();
 
 
-    // ====================================================
-    // SHADOW DEPTH PASS
-    // ====================================================
+        // ====================================================
+        // SHADOW DEPTH PASS
+        // ====================================================
 
-    if (m_ShadowMapInitialized &&
-        shadowShader &&
-        directionalLight)
-    {
-        m_ShadowMap.BindForWriting();
-
-
-        shadowShader->Bind();
-
-
-        shadowShader->SetMatrix4(
-            "u_LightSpaceMatrix",
-            lightSpaceMatrix);
-
-
-        for (const auto& entity :
-             scene.GetEntities())
+        if (m_ShadowMapInitialized &&
+            shadowShader &&
+            directionalLight)
         {
-            if (!entity)
+            constexpr bool enableShadowInstancing = true;
+
+            struct ShadowItem
             {
-                continue;
-            }
+                Mesh* MeshPtr = nullptr;
+                Matrix4 ModelMatrix;
+            };
 
+            std::vector<ShadowItem> shadowQueue;
 
-            const bool hasMeshRenderer =
-                entity->HasComponent<
-                    MeshRendererComponent>();
-
-
-            const bool hasModelRenderer =
-                entity->HasComponent<
-                    ModelRendererComponent>();
-
-
-            if (!hasMeshRenderer &&
-                !hasModelRenderer)
+            // Recoge toda la geometria, sin descarte por camara.
+            for (const auto& entity : scene.GetEntities())
             {
-                continue;
-            }
-
-            const Matrix4 modelMatrix =
-                entity->GetTransform()
-                    .GetWorldMatrix();
-
-
-            shadowShader->SetMatrix4(
-                "u_Model",
-                modelMatrix);
-
-
-            // --------------------------------------------
-            // MESH
-            // --------------------------------------------
-
-            if (hasMeshRenderer)
-            {
-                MeshRendererComponent& meshRenderer =
-                    entity->GetComponent<
-                        MeshRendererComponent>();
-
-
-                Mesh* mesh =
-                    meshRenderer.GetMesh();
-
-                if (mesh)
-                {
-                    Renderer::SubmitShadowDraw(
-                        mesh->GetVertexCount(),
-                        mesh->GetIndexCount());
-
-                    mesh->Draw();
-                }
-
-            }
-
-
-            // --------------------------------------------
-            // MODEL
-            // --------------------------------------------
-
-            if (hasModelRenderer)
-            {
-                ModelRendererComponent& modelRenderer =
-                    entity->GetComponent<
-                        ModelRendererComponent>();
-
-
-                Model* model =
-                    modelRenderer.GetModel();
-
-                if (!model)
+                if (!entity)
                 {
                     continue;
                 }
 
-                for (const auto& meshPtr :
-                     model->GetMeshes())
+                const bool hasMeshRenderer =
+                    entity->HasComponent<MeshRendererComponent>();
+
+                const bool hasModelRenderer =
+                    entity->HasComponent<ModelRendererComponent>();
+
+                if (!hasMeshRenderer && !hasModelRenderer)
                 {
-                    if (!meshPtr)
+                    continue;
+                }
+
+                const Matrix4 modelMatrix =
+                    entity->GetTransform().GetWorldMatrix();
+
+                const auto enqueueShadow = [&](Mesh* mesh)
+                {
+                    if (!mesh)
                     {
-                        continue;
+                        return;
                     }
 
-                    Renderer::SubmitShadowDraw(
-                        meshPtr->GetVertexCount(),
-                        meshPtr->GetIndexCount());
-                    
-                    meshPtr->Draw();
+                    ShadowItem item;
+                    item.MeshPtr = mesh;
+                    item.ModelMatrix = modelMatrix;
+
+                    shadowQueue.push_back(item);
+                };
+
+                if (hasMeshRenderer)
+                {
+                    enqueueShadow(
+                        entity->GetComponent<MeshRendererComponent>()
+                            .GetMesh());
+                }
+
+                if (hasModelRenderer)
+                {
+                    Model* model =
+                        entity->GetComponent<ModelRendererComponent>()
+                            .GetModel();
+
+                    if (model)
+                    {
+                        for (const auto& meshPtr : model->GetMeshes())
+                        {
+                            enqueueShadow(meshPtr.get());
+                        }
+                    }
                 }
             }
+
+            std::sort(
+                shadowQueue.begin(),
+                shadowQueue.end(),
+                [](const ShadowItem& a, const ShadowItem& b)
+                {
+                    return std::less<Mesh*>{}(
+                        a.MeshPtr,
+                        b.MeshPtr);
+                });
+
+            m_ShadowMap.BindForWriting();
+
+            shadowShader->Bind();
+
+            shadowShader->SetMatrix4(
+                "u_LightSpaceMatrix",
+                lightSpaceMatrix);
+
+            shadowShader->SetBool(
+                "u_UseInstancing",
+                false);
+
+            std::vector<float> instanceMatrices;
+
+            std::size_t begin = 0;
+
+            while (begin < shadowQueue.size())
+            {
+                Mesh* mesh = shadowQueue[begin].MeshPtr;
+
+                std::size_t end = begin + 1;
+
+                while (end < shadowQueue.size() &&
+                    shadowQueue[end].MeshPtr == mesh)
+                {
+                    ++end;
+                }
+
+                const std::size_t instanceCount =
+                    end - begin;
+
+                bool drawnInstanced = false;
+
+                if (enableShadowInstancing &&
+                    instanceCount > 1)
+                {
+                    instanceMatrices.clear();
+
+                    for (std::size_t i = begin; i < end; ++i)
+                    {
+                        const float* matrixData =
+                            shadowQueue[i].ModelMatrix.Data();
+
+                        instanceMatrices.insert(
+                            instanceMatrices.end(),
+                            matrixData,
+                            matrixData + 16);
+                    }
+
+                    shadowShader->SetBool(
+                        "u_UseInstancing",
+                        true);
+
+                    drawnInstanced =
+                        mesh->DrawInstanced(instanceMatrices);
+
+                    shadowShader->SetBool(
+                        "u_UseInstancing",
+                        false);
+
+                    if (drawnInstanced)
+                    {
+                        Renderer::SubmitShadowDraw(
+                            mesh->GetVertexCount(),
+                            mesh->GetIndexCount(),
+                            static_cast<uint32_t>(instanceCount));
+                    }
+                }
+
+                if (!drawnInstanced)
+                {
+                    for (std::size_t i = begin; i < end; ++i)
+                    {
+                        shadowShader->SetMatrix4(
+                            "u_Model",
+                            shadowQueue[i].ModelMatrix);
+
+                        mesh->Draw();
+
+                        Renderer::SubmitShadowDraw(
+                            mesh->GetVertexCount(),
+                            mesh->GetIndexCount());
+                    }
+                }
+
+                begin = end;
+            }
+
+            shadowShader->SetBool(
+                "u_UseInstancing",
+                false);
+
+            m_ShadowMap.Unbind();
         }
-
-
-        m_ShadowMap.Unbind();
-
-    }
 
 
         // ====================================================
@@ -1411,9 +1472,16 @@ void RenderSystem::SortRenderQueue()
                     b.ShaderPtr);
             }
 
-            return std::less<Material*>{}(
-                a.MaterialPtr,
-                b.MaterialPtr);
+            if (a.MaterialPtr != b.MaterialPtr)
+            {
+                return std::less<Material*>{}(
+                    a.MaterialPtr,
+                    b.MaterialPtr);
+            }
+
+            return std::less<Mesh*>{}(
+                a.MeshPtr,
+                b.MeshPtr);
         });
 }
 
@@ -1433,19 +1501,57 @@ void RenderSystem::ExecuteRenderQueue(
     Cubemap* prefilterMap,
     BRDFLUT* brdfLUT)
 {
+    constexpr bool enableInstancing = true;
+
+    Shader* basicShader =
+        AssetManager::GetShader("Basic");
+
+    Shader* pbrShader =
+        AssetManager::GetShader("PBR");
+
     Shader* currentShader = nullptr;
     Material* currentMaterial = nullptr;
 
-    for (const RenderItem& item : m_RenderQueue)
+    std::vector<float> instanceMatrices;
+
+    std::size_t begin = 0;
+
+    while (begin < m_RenderQueue.size())
     {
+        const RenderItem& item =
+            m_RenderQueue[begin];
+
         if (!item.MeshPtr ||
             !item.MaterialPtr ||
             !item.ShaderPtr)
         {
+            ++begin;
             continue;
         }
 
+        // Busca elementos consecutivos compatibles.
+        std::size_t end = begin + 1;
+
+        while (end < m_RenderQueue.size())
+        {
+            const RenderItem& next =
+                m_RenderQueue[end];
+
+            if (next.MeshPtr != item.MeshPtr ||
+                next.MaterialPtr != item.MaterialPtr ||
+                next.ShaderPtr != item.ShaderPtr)
+            {
+                break;
+            }
+
+            ++end;
+        }
+
         Shader& shader = *item.ShaderPtr;
+
+        const bool supportsInstancing =
+            item.ShaderPtr == basicShader ||
+            item.ShaderPtr == pbrShader;
 
         if (item.ShaderPtr != currentShader)
         {
@@ -1496,15 +1602,79 @@ void RenderSystem::ExecuteRenderQueue(
             currentMaterial = item.MaterialPtr;
         }
 
-        shader.SetMatrix4(
-            "u_Model",
-            item.ModelMatrix);
+        // Evita conservar el estado de un dibujo anterior.
+        if (supportsInstancing)
+        {
+            shader.SetBool(
+                "u_UseInstancing",
+                false);
+        }
 
-        item.MeshPtr->Draw();
+        const std::size_t instanceCount =
+            end - begin;
 
-        Renderer::SubmitSceneDraw(
-            item.MeshPtr->GetVertexCount(),
-            item.MeshPtr->GetIndexCount());
+        bool drawnInstanced = false;
+
+        if (enableInstancing &&
+            supportsInstancing &&
+            instanceCount > 1)
+        {
+            instanceMatrices.clear();
+
+            for (std::size_t i = begin; i < end; ++i)
+            {
+                const float* matrixData =
+                    m_RenderQueue[i].ModelMatrix.Data();
+
+                instanceMatrices.insert(
+                    instanceMatrices.end(),
+                    matrixData,
+                    matrixData + 16);
+            }
+
+            shader.SetBool(
+                "u_UseInstancing",
+                true);
+
+            drawnInstanced =
+                item.MeshPtr->DrawInstanced(
+                    instanceMatrices);
+
+            shader.SetBool(
+                "u_UseInstancing",
+                false);
+
+            if (drawnInstanced)
+            {
+                Renderer::SubmitSceneDraw(
+                    item.MeshPtr->GetVertexCount(),
+                    item.MeshPtr->GetIndexCount(),
+                    static_cast<uint32_t>(instanceCount));
+            }
+        }
+
+        // Dibujo individual para grupos unitarios,
+        // Shaders no adaptados o fallo de preparacion.
+        if (!drawnInstanced)
+        {
+            for (std::size_t i = begin; i < end; ++i)
+            {
+                const RenderItem& single =
+                    m_RenderQueue[i];
+
+                shader.SetMatrix4(
+                    "u_Model",
+                    single.ModelMatrix);
+
+                single.MeshPtr->Draw();
+
+                Renderer::SubmitSceneDraw(
+                    single.MeshPtr->GetVertexCount(),
+                    single.MeshPtr->GetIndexCount());
+            }
+        }
+
+        begin = end;
     }
 }
 

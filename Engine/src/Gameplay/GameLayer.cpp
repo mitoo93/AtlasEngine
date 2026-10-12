@@ -31,6 +31,7 @@
 #include "AtlasEngine/Systems/RenderSystem.h"
 
 #include <iostream>
+#include <string>
 
 namespace AtlasEngine
 {
@@ -738,6 +739,97 @@ void GameLayer::OnAttach()
 
     Renderer::SetExposure(
         1.0f);
+
+        // ----------------------------------------------------
+        // PRUEBA DE RENDER QUEUE
+        // ----------------------------------------------------
+
+        constexpr bool enableRenderQueueTest = false;
+
+        if (enableRenderQueueTest)
+        {
+            Mesh* sharedMesh =
+                AssetManager::GetMesh("Sphere");
+
+            Material* materialA =
+                AssetManager::GetMaterial("Default");
+
+            Material* materialB =
+                AssetManager::GetMaterial("PBR_Default");
+
+            if (sharedMesh &&
+                materialA &&
+                materialB &&
+                materialA->GetShader() &&
+                materialB->GetShader())
+            {
+                constexpr int columns = 10;
+                constexpr int rows = 10;
+
+                constexpr float spacing = 0.8f;
+                constexpr float scale = 0.25f;
+
+                for (int row = 0; row < rows; ++row)
+                {
+                    for (int column = 0; column < columns; ++column)
+                    {
+                        const int index =
+                            row * columns + column;
+
+                        Entity& entity =
+                            m_Scene.CreateEntity(
+                                std::string("QueueTest_") +
+                                std::to_string(index));
+
+                        entity.GetTransform().SetPosition(
+                        {
+                            (static_cast<float>(column) -
+                                (columns - 1) * 0.5f) * spacing,
+
+                            1.0f +
+                                static_cast<float>(row) * spacing,
+
+                            -12.0f
+                        });
+
+                        entity.GetTransform().SetScale(
+                        {
+                            scale,
+                            scale,
+                            scale
+                        });
+
+                        entity.AddComponent<
+                            MeshRendererComponent>();
+
+                        entity.AddComponent<
+                            MaterialComponent>();
+
+                        entity.GetComponent<
+                            MeshRendererComponent>()
+                            .SetMesh(sharedMesh);
+
+                        entity.GetComponent<
+                            MaterialComponent>()
+                            .SetMaterial(
+                                index % 2 == 0
+                                    ? materialA
+                                    : materialB);
+                    }
+                }
+
+                std::cout
+                    << "Render Queue: creadas "
+                    << rows * columns
+                    << " entidades de prueba\n";
+            }
+            else
+            {
+                std::cerr
+                    << "Render Queue: faltan recursos "
+                    << "para crear la prueba\n";
+            }
+        }
 
     Renderer::SetGrayscaleEnabled(
         false);

@@ -772,54 +772,86 @@ void Renderer::ResetStats()
 
 void Renderer::SubmitSceneDraw(
     uint32_t vertexCount,
-    uint32_t indexCount)
+    uint32_t indexCount,
+    uint32_t instanceCount)
 {
+    if (instanceCount == 0)
+    {
+        return;
+    }
+
     ++s_RenderStats.DrawCalls;
     ++s_RenderStats.SceneDrawCalls;
 
+    const uint64_t instances =
+        static_cast<uint64_t>(instanceCount);
+
     s_RenderStats.Vertices +=
-        vertexCount;
+        static_cast<uint64_t>(vertexCount) * instances;
 
     s_RenderStats.Indices +=
-        indexCount;
+        static_cast<uint64_t>(indexCount) * instances;
 
-    if (indexCount > 0)
-    {
-        s_RenderStats.Triangles +=
-            indexCount / 3;
-    }
-    else
-    {
-        s_RenderStats.Triangles +=
-            vertexCount / 3;
-    }
+    const uint64_t trianglesPerInstance =
+        indexCount > 0
+            ? static_cast<uint64_t>(indexCount / 3)
+            : static_cast<uint64_t>(vertexCount / 3);
 
-    ++s_RenderStats.RenderedObjects;
+    s_RenderStats.Triangles +=
+        trianglesPerInstance * instances;
+
+    s_RenderStats.RenderedObjects +=
+        instanceCount;
+
+    if (instanceCount > 1)
+    {
+        ++s_RenderStats.SceneInstancedDrawCalls;
+
+        s_RenderStats.SceneInstancedInstances +=
+            instanceCount;
+    }
 }
 
 
 void Renderer::SubmitShadowDraw(
     uint32_t vertexCount,
-    uint32_t indexCount)
+    uint32_t indexCount,
+    uint32_t instanceCount)
 {
+    if (instanceCount == 0)
+    {
+        return;
+    }
+
     ++s_RenderStats.DrawCalls;
     ++s_RenderStats.ShadowDrawCalls;
 
+    const uint64_t instances =
+        static_cast<uint64_t>(instanceCount);
+
     s_RenderStats.Vertices +=
-        vertexCount;
+        static_cast<uint64_t>(vertexCount) * instances;
 
     s_RenderStats.Indices +=
-        indexCount;
+        static_cast<uint64_t>(indexCount) * instances;
 
-    if (indexCount > 0)
+    const uint64_t trianglesPerInstance =
+        indexCount > 0
+            ? static_cast<uint64_t>(indexCount / 3)
+            : static_cast<uint64_t>(vertexCount / 3);
+
+    s_RenderStats.Triangles +=
+        trianglesPerInstance * instances;
+
+    s_RenderStats.ShadowMeshInstances +=
+        instanceCount;
+
+    if (instanceCount > 1)
     {
-        s_RenderStats.Triangles +=
-            indexCount / 3;
-    }
-    else
-    {
-        s_RenderStats.Triangles +=
-            vertexCount / 3;
+        ++s_RenderStats.ShadowInstancedDrawCalls;
+
+        s_RenderStats.ShadowInstancedInstances +=
+            instanceCount;
     }
 }
 

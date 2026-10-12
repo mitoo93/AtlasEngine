@@ -27,6 +27,13 @@ struct RenderStats
     uint32_t SceneShaderBinds = 0;
     uint32_t SceneMaterialBinds = 0;
 
+    uint32_t SceneInstancedDrawCalls = 0;
+    uint32_t SceneInstancedInstances = 0;
+
+    uint32_t ShadowInstancedDrawCalls = 0;
+    uint32_t ShadowInstancedInstances = 0;
+    uint32_t ShadowMeshInstances = 0;
+
     void Reset()
     {
         DrawCalls = 0;
@@ -49,6 +56,13 @@ struct RenderStats
 
         SceneShaderBinds = 0;
         SceneMaterialBinds = 0;
+
+        SceneInstancedDrawCalls = 0;
+        SceneInstancedInstances = 0;
+
+        ShadowInstancedDrawCalls = 0;
+        ShadowInstancedInstances = 0;
+        ShadowMeshInstances = 0;
     }
 };
 

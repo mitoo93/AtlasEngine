@@ -773,6 +773,22 @@ void EditorLayer::OnImGuiRender()
                 ImGui::Text(
                     "Post process: %u",
                     stats.PostProcessDrawCalls);
+
+                ImGui::Text(
+                    "Scene instanced calls: %u",
+                    stats.SceneInstancedDrawCalls);
+
+                ImGui::Text(
+                    "Instances in instanced calls: %u",
+                    stats.SceneInstancedInstances);
+
+                ImGui::Text(
+                    "Shadow instanced calls: %u",
+                    stats.ShadowInstancedDrawCalls);
+
+                ImGui::Text(
+                    "Instances in shadow instanced calls: %u",
+                    stats.ShadowInstancedInstances);
             }
 
             if (ImGui::CollapsingHeader(
@@ -807,12 +823,17 @@ void EditorLayer::OnImGuiRender()
                     stats.CulledObjects);
 
                 ImGui::Text(
-                    "Scene mesh draws: %u",
+                    "Scene mesh instances: %u",
                     stats.RenderedObjects);
+                
+                ImGui::Text(
+                    "Shadow mesh instances: %u",
+                    stats.ShadowMeshInstances);
 
                 ImGui::TextWrapped(
-                    "A model counts as one candidate, "
-                    "but may produce several mesh draws.");
+                    "A model counts as one candidate. "
+                    "Each visible Mesh counts as one instance. "
+                    "Compatible instances can share a Draw Call.");
             }
 
             if (ImGui::CollapsingHeader(

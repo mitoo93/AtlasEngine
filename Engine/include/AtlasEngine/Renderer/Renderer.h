@@ -83,11 +83,13 @@ public:
 
     static void SubmitSceneDraw(
         uint32_t vertexCount,
-        uint32_t indexCount);
+        uint32_t indexCount,
+        uint32_t instanceCount = 1);
 
     static void SubmitShadowDraw(
         uint32_t vertexCount,
-        uint32_t indexCount);
+        uint32_t indexCount,
+        uint32_t instanceCount = 1);
 
     static void SubmitPostProcessDraw();
 
