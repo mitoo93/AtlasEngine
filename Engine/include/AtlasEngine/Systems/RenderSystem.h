@@ -147,9 +147,19 @@ private:
     float m_ShadowLightDistance =
         10.0f;
 
+    struct ShadowItem
+    {
+        Mesh* MeshPtr = nullptr;
+        Matrix4 ModelMatrix;
+    };
 
-    std::vector<RenderItem>
-        m_RenderQueue;
+    std::vector<RenderItem> m_RenderQueue;
+
+    std::vector<ShadowItem> m_ShadowQueue;
+
+    std::vector<float> m_ShadowInstanceMatrices;
+
+    std::vector<float> m_SceneInstanceMatrices;
 };
 
 }

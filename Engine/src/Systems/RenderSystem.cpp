@@ -400,13 +400,9 @@ void RenderSystem::Update(
         {
             constexpr bool enableShadowInstancing = true;
 
-            struct ShadowItem
-            {
-                Mesh* MeshPtr = nullptr;
-                Matrix4 ModelMatrix;
-            };
+            auto& shadowQueue = m_ShadowQueue;
 
-            std::vector<ShadowItem> shadowQueue;
+            shadowQueue.clear();
 
             // Recoge toda la geometria, sin descarte por camara.
             for (const auto& entity : scene.GetEntities())
@@ -489,8 +485,10 @@ void RenderSystem::Update(
                 "u_UseInstancing",
                 false);
 
-            std::vector<float> instanceMatrices;
+            auto& instanceMatrices =
+                m_ShadowInstanceMatrices;
 
+            instanceMatrices.clear();
             std::size_t begin = 0;
 
             while (begin < shadowQueue.size())
@@ -1512,7 +1510,10 @@ void RenderSystem::ExecuteRenderQueue(
     Shader* currentShader = nullptr;
     Material* currentMaterial = nullptr;
 
-    std::vector<float> instanceMatrices;
+    auto& instanceMatrices =
+        m_SceneInstanceMatrices;
+
+    instanceMatrices.clear();
 
     std::size_t begin = 0;
 

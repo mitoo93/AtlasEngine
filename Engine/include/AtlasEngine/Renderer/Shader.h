@@ -4,6 +4,7 @@
 #include "AtlasEngine/Math/Vector3.h"
 
 #include <string>
+#include <unordered_map>
 
 namespace AtlasEngine
 {
@@ -15,8 +16,9 @@ public:
     Shader();
     ~Shader();
 
-    bool Create(const std::string& vertexSource,
-                const std::string& fragmentSource);
+    bool Create(
+        const std::string& vertexSource,
+        const std::string& fragmentSource);
 
     bool Load(
         const std::string& vertexPath,
@@ -47,12 +49,19 @@ public:
 
 private:
 
-    unsigned int CompileShader(unsigned int type,
-                               const std::string& source);
+    unsigned int CompileShader(
+        unsigned int type,
+        const std::string& source);
+
+    int GetUniformLocation(
+        const std::string& name) const;
 
 private:
 
     unsigned int m_RendererID = 0;
+
+    mutable std::unordered_map<std::string, int>
+        m_UniformLocationCache;
 };
 
 }

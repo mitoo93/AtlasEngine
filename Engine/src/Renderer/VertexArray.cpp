@@ -2,6 +2,8 @@
 
 #include "AtlasEngine/Renderer/VertexArray.h"
 
+#include <cstdint>
+
 namespace AtlasEngine
 {
 
@@ -51,7 +53,8 @@ void VertexArray::AddVertexBuffer(const VertexBuffer& vertexBuffer)
             element.Type,
             element.Normalized ? GL_TRUE : GL_FALSE,
             layout.GetStride(),
-            reinterpret_cast<const void*>(element.Offset));
+            reinterpret_cast<const void*>(
+                static_cast<std::uintptr_t>(element.Offset)));
 
         glEnableVertexAttribArray(m_NextAttributeIndex);
 
